@@ -1,8 +1,5 @@
 package edu.jsu.mcis.tas_sp20;
 
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 
 class Punch {
     int id, terminalid, punchtypeid;
