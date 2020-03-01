@@ -9,25 +9,26 @@ public class Shift {
     LocalTime start, stop, lunchStart, lunchStop;
 
     Shift(int ID, int dock, int gracePeriod, int interval) {
-        description = null;
         ID = 0;
+        description = null;
 
         dock = 0;
         gracePeriod = 0;
         interval = 0;
     }
 
-    Shift (int ID, int dock, int gracePeriod, int interval, int lunchDeduct, LocalTime start, LocalTime stop, LocalTime
-            lunchStart, LocalTime lunchStop) {
+    Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock, LocalTime
+            lunchStart, LocalTime lunchStop, int lunchDeduct) {
         this.ID = ID;
-        this.dock = dock;
-        this.gracePeriod = gracePeriod;
-        this.interval = interval;
-        this.lunchDeduct = lunchDeduct;
+        this.description = description;
         this.start = start;
         this.stop = stop;
+        this.interval = interval;
+        this.gracePeriod = gracePeriod;
+        this.dock = dock;
         this.lunchStart = lunchStart;
         this.lunchStop = lunchStop;
+        this.lunchDeduct = lunchDeduct;
     }
 
 
@@ -59,5 +60,9 @@ public class Shift {
     public LocalTime getStop (LocalTime stop) {return stop;}
     public LocalTime getLunchStart (LocalTime lunchStart) {return lunchStart;}
     public LocalTime getLunchStop (LocalTime lunchStop) {return lunchStop;}
+
+
+    // toString method
+
 }
 
