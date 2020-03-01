@@ -74,7 +74,7 @@ public class TASDatabase {
             pstBadge.execute();
             resultSet = pstBadge.getResultSet();
 
-            Badge badge = new Badge(resultSet.getString(2));
+            Badge badge = new Badge(resultSet.getString(1), resultSet.getString(2));
 
             punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
 
@@ -117,7 +117,7 @@ public class TASDatabase {
         try {
             query = "SELECT * FROM shift WHERE id=?";
             pst = conn.prepareStatement(query);
-            pst.setString(1, ID);
+            pst.setInt(1, ID);
 
             pst.execute();
             resultSet = pst.getResultSet();
@@ -183,12 +183,10 @@ public class TASDatabase {
         return shift;
     }
 
-    //TODO: Add to this database class?
-    public int insertPunch(Punch p) {
-        //TODO: Check variable names
-        Badge badgeID = p.getBadgeID();
+    public int insertPunch(Punch p) {   //done?
+        String badgeID = p.getBadge().getID();
         int terminalID = p.getTerminalID(), punchTypeID = p.getPunchTypeID();
-        LocalTime originalTimeStamp = p.getOriginalTimeStamp;
+        Long originalTimeStamp = p.getOriginalTimeStamp();
 
         try {
             PreparedStatement pst;
@@ -199,11 +197,11 @@ public class TASDatabase {
             if (conn.isValid(0)){
                 query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (?, ?, ?, ?)";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                //TODO: All strings?
-                pst.setString(1, String.valueOf(terminalID));
+                pst.setInt(1, terminalID);
                 pst.setString(2, badgeID.toString());
-                pst.setString(3, originalTimeStamp.toString()); //TODO: Default toString()?
-                pst.setString(4, String.valueOf(punchTypeID));
+                Timestamp timestamp = new Timestamp(originalTimeStamp);
+                pst.setTimestamp(3, timestamp);
+                pst.setInt(4, punchTypeID);
 
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
