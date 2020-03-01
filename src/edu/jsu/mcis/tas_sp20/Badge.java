@@ -11,7 +11,7 @@ public class Badge {
     }
     
     //Getters
-    public String getId(){
+    public String getID(){
         return this.id;
     }
     
