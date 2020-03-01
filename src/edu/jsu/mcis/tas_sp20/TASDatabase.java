@@ -14,8 +14,22 @@ public class TASDatabase {
     public void TASDatabase(){
         try {
             String server = "jdbc:mysql://localhost/TAS_SP20";
-            String user = "db_user";    //TODO: team pick new login values
-            String pass = "CS488";
+            String user = "admin";
+            String pass = "password";
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+
+            conn = DriverManager.getConnection(server, user, pass);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void TASDatabase(String server, String user, String pass) {
+        try {
+            server = "jdbc:mysql://localhost/TAS_SP20";
+            user = "admin";
+            pass = "password";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
 
             conn = DriverManager.getConnection(server, user, pass);
@@ -33,7 +47,7 @@ public class TASDatabase {
         }
     }
 
-    public Punch getPunch(int id) { //Done?
+    public Punch getPunch(int ID) {//done?
         Punch punch = null;
         try {
             String query;
@@ -44,28 +58,25 @@ public class TASDatabase {
 
             query = "SELECT * FROM punch WHERE id=?";
             pstPunch = conn.prepareStatement(query);
-            //TODO: Pass as string?
-            pstPunch.setInt(1, id);
+            pstPunch.setInt(1, ID);
 
             pstPunch.execute();
             resultSet = pstPunch.getResultSet();
 
-            //TODO: Check types
-//            resultSet.next();
-            int terminalId = resultSet.getInt(2);
-            String badgeId = resultSet.getString(3);
+            int terminalID = resultSet.getInt(2);
+            String badgeID = resultSet.getString(3);
             long origTimeStamp = resultSet.getLong(4);
-            int punchTypeId = resultSet.getInt(5);
+            int punchTypeID = resultSet.getInt(5);
 
             query = "SELECT * FROM badge WHERE id=?";
             pstBadge = conn.prepareStatement(query);
-            pstBadge.setString(1, badgeId);
+            pstBadge.setString(1, badgeID);
             pstBadge.execute();
             resultSet = pstBadge.getResultSet();
 
             Badge badge = new Badge(resultSet.getString(2));
 
-            punch = new Punch(terminalId, badge, origTimeStamp, punchTypeId);
+            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
 
 
         } catch (Exception e) {
@@ -75,7 +86,7 @@ public class TASDatabase {
         return punch;
     }
 
-    public Badge getBadge(String id) {  //DONE?
+    public Badge getBadge(String ID) {  //DONE?
         Badge badge = null;
         String query;
         PreparedStatement pst;
@@ -84,11 +95,11 @@ public class TASDatabase {
         try {
             query = "SELECT * FROM badge WHERE id=?";
             pst = conn.prepareStatement(query);
-            pst.setString(1, id);
+            pst.setString(1, ID);
             pst.execute();
 
             resultSet = pst.getResultSet();
-            badge = new Badge(id, resultSet.getString(2));
+            badge = new Badge(ID, resultSet.getString(2));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,8 +108,7 @@ public class TASDatabase {
         return badge;
     }
 
-    //TODO: id type
-    public Shift getShift(String id) {
+    public Shift getShift(int ID) { //done?
         Shift shift = null;
         String query;
         PreparedStatement pst;
@@ -107,22 +117,77 @@ public class TASDatabase {
         try {
             query = "SELECT * FROM shift WHERE id=?";
             pst = conn.prepareStatement(query);
-            pst.setString(1, id);
+            pst.setString(1, ID);
+
             pst.execute();
-
             resultSet = pst.getResultSet();
+            java.sql.Time temp;
 
+            int ShiftID = resultSet.getInt(1);
+            String description = resultSet.getString(2);
+            temp = resultSet.getTime(3);
+            LocalTime start = temp.toLocalTime();
+            temp = resultSet.getTime(4);
+            LocalTime stop = temp.toLocalTime();
+            int interval = resultSet.getInt(5);
+            int gracePeriod = resultSet.getInt(6);
+            int dock = resultSet.getInt(7);
+            temp = resultSet.getTime(8);
+            LocalTime lunchStart = temp.toLocalTime();
+            temp = resultSet.getTime(9);
+            LocalTime lunchStop = temp.toLocalTime();
+            int lunchDeduct = resultSet.getInt(10);
+            shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return shift;
+    }
+
+    public Shift getShift(Badge badge) {    //done?
+        Shift shift = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+            query = "SELECT * FROM employee WHERE badgeid = ?";
+            pst = conn.prepareStatement(query);
+            pst.setString(1, badge.getID());
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            java.sql.Time temp;
+
+            int ShiftID = resultSet.getInt(1);
+            String description = resultSet.getString(2);
+            temp = resultSet.getTime(3);
+            LocalTime start = temp.toLocalTime();
+            temp = resultSet.getTime(4);
+            LocalTime stop = temp.toLocalTime();
+            int interval = resultSet.getInt(5);
+            int gracePeriod = resultSet.getInt(6);
+            int dock = resultSet.getInt(7);
+            temp = resultSet.getTime(8);
+            LocalTime lunchStart = temp.toLocalTime();
+            temp = resultSet.getTime(9);
+            LocalTime lunchStop = temp.toLocalTime();
+            int lunchDeduct = resultSet.getInt(10);
+            shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return shift;
     }
 
     //TODO: Add to this database class?
     public int insertPunch(Punch p) {
         //TODO: Check variable names
-        Badge badgeId = p.getBadgeId();
-        int terminalId = p.getTerminalId(), punchTypeId = p.getPunchTypeId();
+        Badge badgeID = p.getBadgeID();
+        int terminalID = p.getTerminalID(), punchTypeID = p.getPunchTypeID();
         LocalTime originalTimeStamp = p.getOriginalTimeStamp;
 
         try {
@@ -135,10 +200,10 @@ public class TASDatabase {
                 query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (?, ?, ?, ?)";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 //TODO: All strings?
-                pst.setString(1, String.valueOf(terminalId));
-                pst.setString(2, badgeId.toString());
+                pst.setString(1, String.valueOf(terminalID));
+                pst.setString(2, badgeID.toString());
                 pst.setString(3, originalTimeStamp.toString()); //TODO: Default toString()?
-                pst.setString(4, String.valueOf(punchTypeId));
+                pst.setString(4, String.valueOf(punchTypeID));
 
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
