@@ -1,5 +1,8 @@
 package edu.jsu.mcis.tas_sp20;
 
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 class Punch {
     int id, terminalid, punchtypeid;
@@ -15,7 +18,18 @@ class Punch {
         this.badge = badge;
         this.punchtypeid = punchtypeid;
         
-        originaltimestamp = System.currentTimeMillis();
+        this.originaltimestamp = System.currentTimeMillis();
+    }
+    
+    Punch(Badge badge, int terminalid, Long timestamp, int punchtypeid){
+        id = 0;   
+        adjustmenttype = null;
+        
+        this.terminalid = terminalid;
+        this.badge = badge;
+        this.punchtypeid = punchtypeid;
+        
+        this.originaltimestamp = timestamp;
     }
     
     /*Setter methods*/
@@ -73,8 +87,9 @@ class Punch {
         String s = "";
         
         //Add the relevant information
-        s = "#" + this.getBadge();
+        s = "#" + (this.getBadge()).getID();
         
+        //To-do: make this work on a PunchType object
         switch (this.getPunchTypeID()){
             case 0:
                 s += " CLOCKED OUT: ";
@@ -89,7 +104,7 @@ class Punch {
         DateFormat df = new SimpleDateFormat("EEE MM/dd/yyyy HH:mm:ss");
         Date d = new Date(this.originaltimestamp);
         
-        s += df.format(d);
+        s += (df.format(d)).toUpperCase();
         
         return s;
     }
