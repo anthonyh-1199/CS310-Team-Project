@@ -21,7 +21,7 @@ class Punch {
         this.originaltimestamp = System.currentTimeMillis();
     }
     
-    Punch(Badge badge, int terminalid, Long timestamp, int punchtypeid){
+    Punch(int terminalid, Badge badge, Long timestamp, int punchtypeid){
         id = 0;   
         adjustmenttype = null;
         
