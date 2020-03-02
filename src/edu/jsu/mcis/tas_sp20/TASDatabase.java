@@ -8,6 +8,7 @@ public class TASDatabase {
     private Connection conn;
 
     public static void main(String[] args) {
+        TASDatabase db = new TASDatabase();
     }
 
     public TASDatabase(){
@@ -18,6 +19,13 @@ public class TASDatabase {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
 
             conn = DriverManager.getConnection(server, user, pass);
+
+            //TODO: remove after testing
+            if (conn.isValid(0)) {
+                System.out.println("Connected successfully!");
+            } else {
+                System.out.println("Error connecting!");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
