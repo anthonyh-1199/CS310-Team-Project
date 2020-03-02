@@ -49,18 +49,18 @@ public class Shift {
 
 
     // Getter methods
-    public String getDescription (String description) {return description;}
+    public String getDescription () {return description;}
 
-    public int getID (int ID) {return ID;}
-    public int getDock (int dock) {return dock;}
-    public int getInterval (int interval) { return interval; }
-    public int getGracePeriod (int gracePeriod) {return gracePeriod;}
-    public int getLunchDeduct (int lunchDeduct) {return lunchDeduct;}
+    public int getID () {return ID;}
+    public int getDock () {return dock;}
+    public int getInterval () { return interval; }
+    public int getGracePeriod () {return gracePeriod;}
+    public int getLunchDeduct () {return lunchDeduct;}
 
-    public LocalTime getStart (LocalTime start) {return start;}
-    public LocalTime getStop (LocalTime stop) {return stop;}
-    public LocalTime getLunchStart (LocalTime lunchStart) {return lunchStart;}
-    public LocalTime getLunchStop (LocalTime lunchStop) {return lunchStop;}
+    public LocalTime getStart () {return start;}
+    public LocalTime getStop () {return stop;}
+    public LocalTime getLunchStart () {return lunchStart;}
+    public LocalTime getLunchStop () {return lunchStop;}
 
     public int shiftDuration (LocalTime start, LocalTime stop) {
         LocalTime l1 = LocalTime.parse(start.toString());
