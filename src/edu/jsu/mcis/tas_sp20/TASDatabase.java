@@ -8,7 +8,6 @@ public class TASDatabase {
     private Connection conn;
 
     public static void main(String[] args) {
-        TASDatabase db = new TASDatabase();
     }
 
     public TASDatabase(){
@@ -27,7 +26,7 @@ public class TASDatabase {
 
     public TASDatabase(String server, String user, String pass) {
         try {
-            server = "jdbc:mysql://localhost/TAS_SP20";
+            server = "jdbc:mysql://localhost/TAS";
             user = "admin";
             pass = "password";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
