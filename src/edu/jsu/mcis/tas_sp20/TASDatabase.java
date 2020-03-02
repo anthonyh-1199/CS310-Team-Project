@@ -73,7 +73,7 @@ public class TASDatabase {
 
             int terminalID = resultSet.getInt(2);
             String badgeID = resultSet.getString(3);
-            long origTimeStamp = resultSet.getLong(4);
+            long origTimeStamp = resultSet.getLong(4) * 1000;
             int punchTypeID = resultSet.getInt(5);
 
             query = "SELECT * FROM badge WHERE id=?";
@@ -85,8 +85,8 @@ public class TASDatabase {
 
             Badge badge = new Badge(resultSet.getString(1), resultSet.getString(2));
 
-//            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
-            punch = new Punch(badge, terminalID, origTimeStamp, punchTypeID);
+            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
+//            punch = new Punch(badge, terminalID, origTimeStamp, punchTypeID);
 
 
         } catch (Exception e) {
