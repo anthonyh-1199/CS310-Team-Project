@@ -72,10 +72,10 @@ public class TASDatabase {
             resultSet = pstPunch.getResultSet();
             resultSet.first();
 
-            int terminalID = resultSet.getInt(2);
-            String badgeID = resultSet.getString(3);
-            long origTimeStamp = resultSet.getTimestamp(4).getTime();
-            int punchTypeID = resultSet.getInt(5);
+            int terminalID = resultSet.getInt("terminalid");
+            String badgeID = resultSet.getString("badgeid");
+            long origTimeStamp = resultSet.getTimestamp("originaltimestamp").getTime();
+            int punchTypeID = resultSet.getInt("punchtypeid");
 
             query = "SELECT * FROM badge WHERE id=?";
             pstBadge = conn.prepareStatement(query);
@@ -84,7 +84,7 @@ public class TASDatabase {
             resultSet = pstBadge.getResultSet();
             resultSet.first();
 
-            Badge badge = new Badge(resultSet.getString(1), resultSet.getString(2));
+            Badge badge = new Badge(resultSet.getString("id"), resultSet.getString("description"));
 
             punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
 
@@ -109,7 +109,7 @@ public class TASDatabase {
 
             resultSet = pst.getResultSet();
             resultSet.first();
-            badge = new Badge(ID, resultSet.getString(2));
+            badge = new Badge(ID, resultSet.getString("description"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,20 +134,20 @@ public class TASDatabase {
             resultSet.first();
             java.sql.Time temp;
 
-            int ShiftID = resultSet.getInt(1);
-            String description = resultSet.getString(2);
-            temp = resultSet.getTime(3);
+            int ShiftID = resultSet.getInt("id");
+            String description = resultSet.getString("description");
+            temp = resultSet.getTime("start");
             LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime(4);
+            temp = resultSet.getTime("stop");
             LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt(5);
-            int gracePeriod = resultSet.getInt(6);
-            int dock = resultSet.getInt(7);
-            temp = resultSet.getTime(8);
+            int interval = resultSet.getInt("interval");
+            int gracePeriod = resultSet.getInt("graceperiod");
+            int dock = resultSet.getInt("dock");
+            temp = resultSet.getTime("lunchstart");
             LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime(9);
+            temp = resultSet.getTime("lunchstop");
             LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt(10);
+            int lunchDeduct = resultSet.getInt("lunchdeduct");
             shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
 
         } catch (Exception e) {
@@ -173,7 +173,7 @@ public class TASDatabase {
             resultSet.first();
             java.sql.Time temp;
 
-            int shiftID = resultSet.getInt(1);
+            int shiftID = resultSet.getInt("shiftid");
             query = "SELECT * FROM shift WHERE id=?";
             pst = conn.prepareStatement(query);
             pst.setInt(1, shiftID);
@@ -182,19 +182,19 @@ public class TASDatabase {
             resultSet = pst.getResultSet();
             resultSet.first();
 
-            String description = resultSet.getString(2);
-            temp = resultSet.getTime(3);
+            String description = resultSet.getString("description");
+            temp = resultSet.getTime("start");
             LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime(4);
+            temp = resultSet.getTime("stop");
             LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt(5);
-            int gracePeriod = resultSet.getInt(6);
-            int dock = resultSet.getInt(7);
-            temp = resultSet.getTime(8);
+            int interval = resultSet.getInt("interval");
+            int gracePeriod = resultSet.getInt("graceperiod");
+            int dock = resultSet.getInt("dock");
+            temp = resultSet.getTime("lunchstart");
             LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime(9);
+            temp = resultSet.getTime("lunchstop");
             LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt(10);
+            int lunchDeduct = resultSet.getInt("lunchdeduct");
             shift = new Shift(shiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
         } catch (Exception e) {
             e.printStackTrace();
