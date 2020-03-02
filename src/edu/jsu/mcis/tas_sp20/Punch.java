@@ -37,23 +37,23 @@ class Punch {
         this.badge = badge;
     }
     
-    public void setID(int id){
+    public void setId(int id){
         this.id = id;
     }
     
-    public void setTerminalID(int terminalid){
+    public void setTerminalid(int terminalid){
         this.terminalid = terminalid;
     }
     
-    public void setPunchTypeID(int punchtypeid){
+    public void setPunchtypeid(int punchtypeid){
         this.punchtypeid = punchtypeid;
     }
     
-    public void setOriginalTimeStamp(Long originaltimestamp){
+    public void setOriginaltimestamp(Long originaltimestamp){
         this.originaltimestamp = originaltimestamp;
     }
     
-    public void setAdjustmentType(String adjustmenttype){
+    public void setAdjustmenttype(String adjustmenttype){
         this.adjustmenttype = adjustmenttype;
     }
     
@@ -62,23 +62,23 @@ class Punch {
         return this.badge;
     }
     
-    public int getID(){
+    public int getId(){
         return this.id;
     }
     
-    public int getTerminalID(){
+    public int getTerminalid(){
         return this.terminalid;
     }
     
-    public int getPunchTypeID(){
+    public int getPunchtypeid(){
         return this.punchtypeid;
     }
     
-    public Long getOriginalTimeStamp(){
+    public Long getOriginaltimestamp(){
         return this.originaltimestamp;
     }
     
-    public String getAdjustmentType(){
+    public String getAdjustmenttype(){
         return this.adjustmenttype;
     }
     
@@ -90,7 +90,7 @@ class Punch {
         s = "#" + (this.getBadge()).getID();
         
         //To-do: make this work on a PunchType object
-        switch (this.getPunchTypeID()){
+        switch (this.getPunchtypeid()){
             case 0:
                 s += " CLOCKED OUT: ";
                 break;
@@ -105,7 +105,7 @@ class Punch {
         Date d = new Date(this.originaltimestamp);
         
         s += (df.format(d)).toUpperCase();
-        
+                
         return s;
     }
     
