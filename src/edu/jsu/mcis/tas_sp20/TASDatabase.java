@@ -9,6 +9,7 @@ public class TASDatabase {
 
     public static void main(String[] args) {
         TASDatabase db = new TASDatabase();
+        Punch punch = db.getPunch(3433);
     }
 
     public TASDatabase(){
@@ -73,7 +74,7 @@ public class TASDatabase {
 
             int terminalID = resultSet.getInt(2);
             String badgeID = resultSet.getString(3);
-            long origTimeStamp = resultSet.getLong(4) * 1000;
+            long origTimeStamp = resultSet.getTimestamp(4).getTime();
             int punchTypeID = resultSet.getInt(5);
 
             query = "SELECT * FROM badge WHERE id=?";
@@ -86,8 +87,6 @@ public class TASDatabase {
             Badge badge = new Badge(resultSet.getString(1), resultSet.getString(2));
 
             punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
-//            punch = new Punch(badge, terminalID, origTimeStamp, punchTypeID);
-
 
         } catch (Exception e) {
             e.printStackTrace();
