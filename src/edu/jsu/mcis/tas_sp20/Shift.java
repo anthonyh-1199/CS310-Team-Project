@@ -1,11 +1,12 @@
 package edu.jsu.mcis.tas_sp20;
 
 import java.time.LocalTime;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 public class Shift {
     // TODO: Determine data types
     String description;
-    int ID, interval, gracePeriod, dock, lunchDeduct;
+    int ID, interval, gracePeriod, dock, lunchDeduct, lunchDuration;
     LocalTime start, stop, lunchStart, lunchStop;
 
     Shift(int ID, int dock, int gracePeriod, int interval) {
@@ -52,7 +53,7 @@ public class Shift {
 
     public int getID (int ID) {return ID;}
     public int getDock (int dock) {return dock;}
-    public int getInterval (int interval) {return interval;}
+    public int getInterval (int interval) { return interval; }
     public int getGracePeriod (int gracePeriod) {return gracePeriod;}
     public int getLunchDeduct (int lunchDeduct) {return lunchDeduct;}
 
@@ -61,8 +62,19 @@ public class Shift {
     public LocalTime getLunchStart (LocalTime lunchStart) {return lunchStart;}
     public LocalTime getLunchStop (LocalTime lunchStop) {return lunchStop;}
 
+    public int shiftDuration (LocalTime start, LocalTime stop) {
+        LocalTime l1 = LocalTime.parse(start.toString());
+        LocalTime l2 = LocalTime.parse(stop.toString());
+        long time = l1.until(l2, MINUTES);
+        return (int) time;
+    }
+
 
     // toString method
-
+    @Override
+    public String toString(){
+        String s = description + ": " + start + " - " + stop + " (" + shiftDuration(start, stop) + " minutes); Lunch: " + lunchStart + " - " + lunchStop + " (" + shiftDuration(lunchStart,lunchStop) + " minutes)";
+        return s;
+    }
 }
 
