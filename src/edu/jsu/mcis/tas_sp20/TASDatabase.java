@@ -205,8 +205,8 @@ public class TASDatabase {
 
     public int insertPunch(Punch p) {   //done?
         String badgeID = p.getBadge().getID();
-        int terminalID = p.getTerminalID(), punchTypeID = p.getPunchTypeID();
-        Long originalTimeStamp = p.getOriginalTimeStamp();
+        int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();
+        Long originalTimeStamp = p.getOriginaltimestamp();
 
         try {
             PreparedStatement pst;
