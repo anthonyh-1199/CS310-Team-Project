@@ -8,12 +8,12 @@ public class TASDatabase {
     private Connection conn;
 
     public static void main(String[] args) {
-
+        TASDatabase db = new TASDatabase();
     }
 
-    public void TASDatabase(){
+    public TASDatabase(){
         try {
-            String server = "jdbc:mysql://localhost/TAS_SP20";
+            String server = "jdbc:mysql://localhost/TAS";
             String user = "admin";
             String pass = "password";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -25,7 +25,7 @@ public class TASDatabase {
         }
     }
 
-    public void TASDatabase(String server, String user, String pass) {
+    public TASDatabase(String server, String user, String pass) {
         try {
             server = "jdbc:mysql://localhost/TAS_SP20";
             user = "admin";
@@ -37,6 +37,8 @@ public class TASDatabase {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
     }
 
     public void close() {
@@ -47,14 +49,12 @@ public class TASDatabase {
         }
     }
 
-    public Punch getPunch(int ID) {//done?
+    public Punch getPunch(int ID) {
         Punch punch = null;
         try {
             String query;
             PreparedStatement pstPunch, pstBadge;
             ResultSet resultSet;
-//            ResultSetMetaData metaData;
-//            int colCount;
 
             query = "SELECT * FROM punch WHERE id=?";
             pstPunch = conn.prepareStatement(query);
@@ -62,6 +62,7 @@ public class TASDatabase {
 
             pstPunch.execute();
             resultSet = pstPunch.getResultSet();
+            resultSet.first();
 
             int terminalID = resultSet.getInt(2);
             String badgeID = resultSet.getString(3);
@@ -73,10 +74,12 @@ public class TASDatabase {
             pstBadge.setString(1, badgeID);
             pstBadge.execute();
             resultSet = pstBadge.getResultSet();
+            resultSet.first();
 
             Badge badge = new Badge(resultSet.getString(1), resultSet.getString(2));
 
-            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
+//            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
+            punch = new Punch(badge, terminalID, origTimeStamp, punchTypeID);
 
 
         } catch (Exception e) {
@@ -86,7 +89,7 @@ public class TASDatabase {
         return punch;
     }
 
-    public Badge getBadge(String ID) {  //DONE?
+    public Badge getBadge(String ID) {
         Badge badge = null;
         String query;
         PreparedStatement pst;
@@ -99,6 +102,7 @@ public class TASDatabase {
             pst.execute();
 
             resultSet = pst.getResultSet();
+            resultSet.first();
             badge = new Badge(ID, resultSet.getString(2));
 
         } catch (Exception e) {
@@ -108,7 +112,7 @@ public class TASDatabase {
         return badge;
     }
 
-    public Shift getShift(int ID) { //done?
+    public Shift getShift(int ID) {
         Shift shift = null;
         String query;
         PreparedStatement pst;
@@ -121,6 +125,7 @@ public class TASDatabase {
 
             pst.execute();
             resultSet = pst.getResultSet();
+            resultSet.first();
             java.sql.Time temp;
 
             int ShiftID = resultSet.getInt(1);
@@ -146,22 +151,31 @@ public class TASDatabase {
         return shift;
     }
 
-    public Shift getShift(Badge badge) {    //done?
+    public Shift getShift(Badge badge) {
         Shift shift = null;
         String query;
         PreparedStatement pst;
         ResultSet resultSet;
 
         try {
-            query = "SELECT * FROM employee WHERE badgeid = ?";
+            query = "SELECT shiftid FROM employee WHERE badgeid = ?";
             pst = conn.prepareStatement(query);
             pst.setString(1, badge.getID());
 
             pst.execute();
             resultSet = pst.getResultSet();
+            resultSet.first();
             java.sql.Time temp;
 
-            int ShiftID = resultSet.getInt(1);
+            int shiftID = resultSet.getInt(1);
+            query = "SELECT * FROM shift WHERE id=?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, shiftID);
+            pst.execute();
+
+            resultSet = pst.getResultSet();
+            resultSet.first();
+
             String description = resultSet.getString(2);
             temp = resultSet.getTime(3);
             LocalTime start = temp.toLocalTime();
@@ -175,7 +189,7 @@ public class TASDatabase {
             temp = resultSet.getTime(9);
             LocalTime lunchStop = temp.toLocalTime();
             int lunchDeduct = resultSet.getInt(10);
-            shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            shift = new Shift(shiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -205,6 +219,7 @@ public class TASDatabase {
 
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
+                resultSet.first();
                 if (resultSet.getInt(1) > 0) {
                     return resultSet.getInt(1);
                 } else {
