@@ -9,8 +9,7 @@ import java.util.HashMap;
 
 public class TASLogic {
 
-
-    public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift){
+    public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift){//test
         //Total number of minutes minus lunch deducts, where applicable
         //Deal with time out punches, where employees forgot to clock out
         //Lunch break should be deducted from time only when time > min required for lunch break
@@ -26,11 +25,11 @@ public class TASLogic {
         for (Punch punch : dailypunchlist) {
             switch (punch.getPunchtypeid()) {
                 case 0:
-                    inTime = punch.getAdjustedTimestamp();
+                    inTime = punch.getAdjustedtimestamp();
                     break;
                 case 1:
                     //TODO: is it possible to have a punch out before a punch in?
-                    int minutes = (punch.getAdjustedTimestamp - inTime) / 60000; //TODO: how to round?
+                    int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000); //TODO: how to round?
                     if (minutes > shift.getLunchDeduct()) {//TODO: double check logic
                         minutes -= shift.getLunchDuration();
                     }
@@ -40,11 +39,11 @@ public class TASLogic {
                     break;
             }
         }
-        return -1;
+
+        return total;
     }
 
-
-    public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){
+    public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){//test
         JSONArray jsonArray = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         HashMap<String, String> map = new HashMap<>();
