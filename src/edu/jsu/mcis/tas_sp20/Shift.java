@@ -9,15 +9,6 @@ public class Shift {
     int ID, interval, gracePeriod, dock, lunchDeduct, lunchDuration;
     LocalTime start, stop, lunchStart, lunchStop;
 
-    Shift(int ID, int dock, int gracePeriod, int interval) {
-        ID = 0;
-        description = null;
-
-        dock = 0;
-        gracePeriod = 0;
-        interval = 0;
-        lunchDuration = 0;
-    }
 
     Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock, LocalTime
             lunchStart, LocalTime lunchStop, int lunchDeduct) {
@@ -31,8 +22,15 @@ public class Shift {
         this.lunchStart = lunchStart;
         this.lunchStop = lunchStop;
         this.lunchDeduct = lunchDeduct;
+        this.lunchDuration = shiftDuration(lunchStart,lunchStop);
     }
 
+    private int shiftDuration (LocalTime start, LocalTime stop) {
+        LocalTime l1 = LocalTime.parse(start.toString());
+        LocalTime l2 = LocalTime.parse(stop.toString());
+        long time = l1.until(l2, MINUTES);
+        return (int) time;
+    }
 
     // Setter methods
     public void setDescription (String description) {this.description = description;}
@@ -57,24 +55,20 @@ public class Shift {
     public int getInterval () { return interval; }
     public int getGracePeriod () {return gracePeriod;}
     public int getLunchDeduct () {return lunchDeduct;}
+    public int getLunchDuration() {return lunchDuration;}
 
     public LocalTime getStart () {return start;}
     public LocalTime getStop () {return stop;}
     public LocalTime getLunchStart () {return lunchStart;}
     public LocalTime getLunchStop () {return lunchStop;}
 
-    public int shiftDuration (LocalTime start, LocalTime stop) {
-        LocalTime l1 = LocalTime.parse(start.toString());
-        LocalTime l2 = LocalTime.parse(stop.toString());
-        long time = l1.until(l2, MINUTES);
-        return (int) time;
-    }
+
 
 
     // toString method
     @Override
     public String toString(){
-        String s = description + ": " + start + " - " + stop + " (" + shiftDuration(start, stop) + " minutes); Lunch: " + lunchStart + " - " + lunchStop + " (" + shiftDuration(lunchStart,lunchStop) + " minutes)";
+        String s = description + ": " + start + " - " + stop + " (" + shiftDuration(start, stop) + " minutes); Lunch: " + lunchStart + " - " + lunchStop + " (" + lunchDuration + " minutes)";
         return s;
     }
 }
