@@ -5,10 +5,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 class Punch {
-    int id, terminalid, punchtypeid;
-    Badge badge;
-    Long originaltimestamp;
-    String adjustmenttype;
+    private int id, terminalid, punchtypeid;
+    private Badge badge;
+    private Long originaltimestamp, adjustedTimestamp;
+    private String adjustmenttype;
     
     Punch(Badge badge, int terminalid, int punchtypeid){
         id = 0;   
@@ -57,6 +57,10 @@ class Punch {
         this.adjustmenttype = adjustmenttype;
     }
     
+    public void setAdjustedTimestamp(Long adjustedtimestamp){
+        this.adjustedTimestamp = adjustedtimestamp;
+    }
+    
     /*Getter methods*/
     public Badge getBadge(){
         return this.badge;
@@ -78,16 +82,24 @@ class Punch {
         return this.originaltimestamp;
     }
     
+    public Long getAdjustedtimestamp(){
+        return this.adjustedTimestamp;
+    }
+    
     public String getAdjustmenttype(){
         return this.adjustmenttype;
     }
     
-    /*Print-out method*/
+    public String getBadgeid(){
+        return (this.getBadge()).getID();
+    }
+    
+    /*Print-out methods*/
     public String printOriginalTimestamp(){
         String s = "";
         
         //Add the relevant information
-        s = "#" + (this.getBadge()).getID();
+        s = "#" + this.getBadgeid();
         
         //To-do: make this work on a PunchType object
         switch (this.getPunchtypeid()){
@@ -107,6 +119,10 @@ class Punch {
         s += (df.format(d)).toUpperCase();
                 
         return s;
+    }
+    
+    public String printAdjustedTimestamp(){
+        return "To-do";
     }
     
 }
