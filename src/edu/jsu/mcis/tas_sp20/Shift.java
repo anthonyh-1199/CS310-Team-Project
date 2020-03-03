@@ -16,6 +16,7 @@ public class Shift {
         dock = 0;
         gracePeriod = 0;
         interval = 0;
+        lunchDuration = 0;
     }
 
     Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock, LocalTime
