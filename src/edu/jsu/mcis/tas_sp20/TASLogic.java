@@ -29,7 +29,7 @@ public class TASLogic {
                     break;
                 case 1:
                     //TODO: is it possible to have a punch out before a punch in?
-                    int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000); //TODO: how to round?
+                    int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
                     if (minutes > shift.getLunchDeduct()) {//TODO: double check logic
                         minutes -= shift.getLunchDuration();
                     }
@@ -44,9 +44,7 @@ public class TASLogic {
     }
 
     public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){//test
-        JSONArray jsonArray = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> map;
         ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
 
         for (Punch punch : dailypunchlist) {
@@ -60,6 +58,32 @@ public class TASLogic {
             map.put("adjustmenttype", punch.getAdjustmenttype());
             mapList.add(map);
         }
+
+        return JSONValue.toJSONString(mapList);
+    }
+
+    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test
+        //TODO: Can I just call getPunchListAsJSON() and reconstitute the string instead of redoing the work?
+        HashMap<String, String> map;
+        ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
+
+        for (Punch punch : punchList) {
+            map = new HashMap<>();
+            map.put("id", String.valueOf(punch.getId()));
+            map.put("terminalid", String.valueOf(punch.getTerminalid()));
+            map.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
+            map.put("badgeid", punch.getBadgeid());
+            map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
+            map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
+            map.put("adjustmenttype", punch.getAdjustmenttype());
+            mapList.add(map);
+        }
+
+        map = new HashMap<>();
+        map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
+        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)));
+        mapList.add(map);
+
 
         return JSONValue.toJSONString(mapList);
     }
