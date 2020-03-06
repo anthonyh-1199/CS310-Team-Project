@@ -3,13 +3,14 @@ package edu.jsu.mcis.tas_sp20;
 import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalTime;
+import java.util.ArrayList;
 
 public class TASDatabase {
     private Connection conn;
 
     public static void main(String[] args) {
-        TASDatabase db = new TASDatabase();
-        Punch punch = db.getPunch(3433);
+//        TASDatabase db = new TASDatabase();
+//        Punch punch = db.getPunch(3433);
     }
 
     public TASDatabase(){
@@ -22,11 +23,11 @@ public class TASDatabase {
             conn = DriverManager.getConnection(server, user, pass);
 
             //TODO: remove after testing
-            if (conn.isValid(0)) {
-                System.out.println("Connected successfully!");
-            } else {
-                System.out.println("Error connecting!");
-            }
+//            if (conn.isValid(0)) {
+//                System.out.println("Connected successfully!");
+//            } else {
+//                System.out.println("Error connecting!");
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -240,5 +241,69 @@ public class TASDatabase {
 
         return -1;
 
+    }
+    
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
+        Timestamp timestamp = new Timestamp(ts);
+        String timeLike = timestamp.toString().substring(0, 11);
+        timeLike += "%";
+        ArrayList<Punch> dailyPunchList = new ArrayList<>();
+        
+        Timestamp nextDay = new Timestamp(ts + 86400000);
+        String timeLikeNext = nextDay.toString().substring(0, 11);
+        timeLikeNext += "%";
+
+        try {
+            PreparedStatement pst;
+            ResultSet resultSet;
+            String query;
+            boolean isPaired = true;
+
+
+            if (conn.isValid(0)){
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                pst.setString(1, badge.getID());
+                pst.setString(2, timeLike);
+
+                pst.execute();
+                resultSet = pst.getResultSet();
+                resultSet.first();
+                
+                while(resultSet.next()){
+                    int terminalId = resultSet.getInt("terminalid");
+                    long originalTimeStamp = resultSet.getTimestamp("originaltimestamp").getTime();
+                    int punchTypeId = resultSet.getInt("punchtypeid");
+                    
+                    Punch temp = new Punch(terminalId, badge, originalTimeStamp, punchTypeId);
+                    dailyPunchList.add(temp);
+                    
+                    isPaired = !isPaired;
+                    //lastId = resultSet.getInt
+                }
+                
+                if(!isPaired){
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                pst.setString(1, badge.getID());
+                pst.setString(2, timeLikeNext);
+                
+                pst.execute();
+                resultSet = pst.getResultSet();
+                resultSet.first();
+                
+                int terminalId = resultSet.getInt("terminalid");
+                long originalTimeStamp = resultSet.getTimestamp("originaltimestamp").getTime();
+                int punchTypeId = resultSet.getInt("punchtypeid");
+
+                Punch temp = new Punch(terminalId, badge, originalTimeStamp, punchTypeId);
+                dailyPunchList.add(temp);     
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return dailyPunchList;
     }
 }
