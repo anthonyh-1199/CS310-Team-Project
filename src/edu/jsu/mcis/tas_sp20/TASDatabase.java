@@ -4,13 +4,13 @@ import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
+import java.text.SimpleDateFormat;
 
 public class TASDatabase {
     private Connection conn;
 
     public static void main(String[] args) {
-//        TASDatabase db = new TASDatabase();
-//        Punch punch = db.getPunch(3433);
     }
 
     public TASDatabase(){
@@ -21,13 +21,6 @@ public class TASDatabase {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
 
             conn = DriverManager.getConnection(server, user, pass);
-
-            //TODO: remove after testing
-//            if (conn.isValid(0)) {
-//                System.out.println("Connected successfully!");
-//            } else {
-//                System.out.println("Error connecting!");
-//            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,9 +198,10 @@ public class TASDatabase {
     }
 
     public int insertPunch(Punch p) {   //done?
+        GregorianCalendar ots = new GregorianCalendar();
+        ots.setTimeInMillis(p.getOriginaltimestamp());
         String badgeID = p.getBadge().getID();
         int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();
-        Long originalTimeStamp = p.getOriginaltimestamp();
 
         try {
             PreparedStatement pst;
@@ -220,8 +214,7 @@ public class TASDatabase {
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setInt(1, terminalID);
                 pst.setString(2, badgeID.toString());
-                Timestamp timestamp = new Timestamp(originalTimeStamp);
-                pst.setTimestamp(3, timestamp);
+                pst.setString(3, (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(ots.getTime()));
                 pst.setInt(4, punchTypeID);
 
                 pst.execute();
@@ -268,7 +261,6 @@ public class TASDatabase {
 
                 pst.execute();
                 resultSet = pst.getResultSet();
-                resultSet.first();
                 
                 while(resultSet.next()){
                     int terminalId = resultSet.getInt("terminalid");
