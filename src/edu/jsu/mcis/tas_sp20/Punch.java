@@ -3,6 +3,8 @@ package edu.jsu.mcis.tas_sp20;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoField; 
+
 
 class Punch {
     private int id, terminalid, punchtypeid;
@@ -19,6 +21,7 @@ class Punch {
         this.punchtypeid = punchtypeid;
         
         this.originaltimestamp = System.currentTimeMillis();
+        this.adjustedTimestamp = this.originaltimestamp;
     }
     
     Punch(int terminalid, Badge badge, Long timestamp, int punchtypeid){
@@ -30,8 +33,22 @@ class Punch {
         this.punchtypeid = punchtypeid;
         
         this.originaltimestamp = timestamp;
+        this.adjustedTimestamp = this.originaltimestamp;
     }
     
+    public void adjust(Shift s){
+        //Convert LocalTimes to Long timestamps
+        Long shiftStart = (s.getStart()).getLong(ChronoField.MILLI_OF_SECOND);
+        Long shiftStop = (s.getStop()).getLong(ChronoField.MILLI_OF_SECOND);
+        Long shiftLunchStart = (s.getLunchStart()).getLong(ChronoField.MILLI_OF_SECOND);
+        Long shiftLunchStop = (s.getLunchStop()).getLong(ChronoField.MILLI_OF_SECOND);
+        
+        //If clocked-in early, snap to scheduled clock-in time
+        if ((this.getPunchtypeid() == 1) && (this.getOriginaltimestamp() - shiftStart < 0)){
+            this.setAdjustedTimestamp(shiftStart);
+        }
+    }
+
     /*Setter methods*/
     public void setBadge(Badge badge){
         this.badge = badge;
