@@ -3,8 +3,8 @@ package edu.jsu.mcis.tas_sp20;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoField; 
 import java.sql.Timestamp;
+import java.util.GregorianCalendar;
 import java.time.*;
 
 class Punch {
@@ -26,8 +26,8 @@ class Punch {
     }
     
     Punch(int terminalid, Badge badge, Long timestamp, int punchtypeid){
-        this.id = 0;   
-        this.adjustmenttype = null;
+        id = 0;   
+        adjustmenttype = null;
         
         this.terminalid = terminalid;
         this.badge = badge;
@@ -39,13 +39,24 @@ class Punch {
     
     public void adjust(Shift s){
         //Convert LocalTimes to Long timestamps
-        DateFormat df = new SimpleDateFormat("HH:mm:00");
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
         Date d = new Date(this.originaltimestamp);
         String str = df.format(d);
         LocalTime lt = LocalTime.parse(str);
         
         Long l = this.getOriginaltimestamp() % 86400000;
-        Long daysTime = this.getOriginaltimestamp() - l ;
+        Long daysTime = this.getOriginaltimestamp() - l;
+        
+        //Get the shift timestamps in Gregorian Calendar form
+        GregorianCalendar originalTSCal = new GregorianCalendar();
+            originalTSCal.setTimeInMillis(this.getOriginaltimestamp()); //Doesn't give the correct time?
+        GregorianCalendar sStartCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getStart().getHour(), s.getStart().getMinute());
+
+        GregorianCalendar sStopCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getStop().getHour(), s.getStop().getMinute());
+
+        GregorianCalendar lStartCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getLunchStart().getHour(), s.getLunchStart().getMinute());
+
+        GregorianCalendar lStopCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getLunchStop().getHour(), s.getLunchStop().getMinute());
         
         switch (this.getPunchtypeid()){
             case 0:
