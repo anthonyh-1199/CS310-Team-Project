@@ -119,6 +119,57 @@ class Punch {
         }
     }
 
+    public void testAdjust(Shift shift) {
+        long time = originaltimestamp % 86400000;
+        long start = shift.getStart().toSecondOfDay() * 1000;
+        long stop = shift.getStop().toSecondOfDay() * 1000;
+        long lunchStart = shift.getLunchStart().toSecondOfDay() * 1000;
+        long lunchStop = shift.getLunchStop().toSecondOfDay() * 1000;
+        long interval = shift.getInterval() * 60000;
+        long grace = shift.getGracePeriod() * 60000;
+        long dock = shift.getDock() * 60000;
+        //long adjustment;
+
+        if ((originaltimestamp % (86400000 * 7)) < 86400000 * 5){
+            switch (punchtypeid) {
+                case 0: //clock out
+                    adjustClockOut(time);
+                    break;
+                case 1: //clock in
+                    adjustClockIn(time);
+                    break;
+                case 3: //time out
+                    adjustTimeOut(time);
+                    break;
+            }
+        }
+        else {
+
+        }
+    }
+
+    private long adjustClockOut(long time) {
+        long start = shift.getStart().toSecondOfDay() * 1000;
+        long stop = shift.getStop().toSecondOfDay() * 1000;
+        long lunchStart = shift.getLunchStart().toSecondOfDay() * 1000;
+        long lunchStop = shift.getLunchStop().toSecondOfDay() * 1000;
+        long interval = shift.getInterval() * 60000;
+        long grace = shift.getGracePeriod() * 60000;
+        long dock = shift.getDock() * 60000;
+        //long adjustment;
+
+        if (time < start && time > start - interval) {  //in early within interval
+            time = start;
+        }
+        else if (time > start && time < start + grace) {    //in late within grace
+            time = start;
+        }
+        else if (time > start + grace && time < start + dock) { //dock
+            time = start + dock;
+        }
+        else if ()
+    }
+
     /*Setter methods*/
     public void setBadge(Badge badge){
         this.badge = badge;
