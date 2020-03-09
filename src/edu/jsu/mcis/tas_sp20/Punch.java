@@ -4,7 +4,8 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoField; 
-
+import java.sql.Timestamp;
+import java.time.*;
 
 class Punch {
     private int id, terminalid, punchtypeid;
@@ -38,14 +39,83 @@ class Punch {
     
     public void adjust(Shift s){
         //Convert LocalTimes to Long timestamps
-        Long shiftStart = (s.getStart()).getLong(ChronoField.MILLI_OF_SECOND);
-        Long shiftStop = (s.getStop()).getLong(ChronoField.MILLI_OF_SECOND);
-        Long shiftLunchStart = (s.getLunchStart()).getLong(ChronoField.MILLI_OF_SECOND);
-        Long shiftLunchStop = (s.getLunchStop()).getLong(ChronoField.MILLI_OF_SECOND);
+        DateFormat df = new SimpleDateFormat("HH:mm:00");
+        Date d = new Date(this.originaltimestamp);
+        String str = df.format(d);
+        LocalTime lt = LocalTime.parse(str);
         
-        //If clocked-in early, snap to scheduled clock-in time
-        if ((this.getPunchtypeid() == 1) && (this.getOriginaltimestamp() - shiftStart < 0)){
-            this.setAdjustedTimestamp(shiftStart);
+        Long l = this.getOriginaltimestamp() % 86400000;
+        Long daysTime = this.getOriginaltimestamp() - l;
+        
+        switch (this.getPunchtypeid()){
+            case 0:
+                //SHIFT CLOCK-OUTS
+                //If clocked-out late && within interval, snap to scheduled clock-out time
+                if ((lt.compareTo(s.getStop()) > 0)
+                && (lt.compareTo(s.getStop().plusMinutes(s.getInterval())) < 0)){
+                    this.setAdjustedTimestamp((s.getStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Shift Stop)");
+                } else
+                
+                //If clocked-out early, but within grace period
+                if (lt.compareTo(s.getStop().minusMinutes(s.getGracePeriod())) > 0){
+                    this.setAdjustedTimestamp((s.getStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Shift Stop)");
+                } else
+                
+                //If clocked-out early, but outside of grace and within dock
+                if ((lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) <= 0) 
+                && (lt.compareTo(s.getStart().plusMinutes(s.getDock())) >= 0)){
+                    //Set AdjTime to starting time + dock # of minutes
+                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000
+                    + (s.getDock() * 60000));
+                    this.setAdjustmenttype("(Shift Dock)");
+                } else
+                
+                //LUNCH CLOCK-OUT
+                //If clocked-out late during lunch break, snap to scheduled lunch-start time
+                if ((lt.compareTo(s.getLunchStart()) > 0)
+                && (lt.compareTo(s.getLunchStop()) < 0)){
+                    this.setAdjustedTimestamp((s.getLunchStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Lunch Start)");
+                }
+                break;
+            
+            case 1:
+                //SHIFT CLOCK-INS
+                //If clocked-in early && within interval, snap to scheduled clock-in time
+                if ((lt.compareTo(s.getStart()) < 0)
+                && (lt.compareTo(s.getStart().plusMinutes(s.getInterval())) > 0)){
+                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Shift Start)");
+                } else
+        
+                //If clocked-in late, but within grace period
+                if (lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) < 0){
+                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Shift Start)");
+                } else
+        
+                //If clocked-in late, but outside of grace and within dock
+                if ((lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) > 0) 
+                && (lt.compareTo(s.getStart().plusMinutes(s.getDock())) <= 0)){
+                    //Set AdjTime to starting time + dock # of minutes
+                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000
+                    + (s.getDock() * 60000));
+                    this.setAdjustmenttype("(Shift Dock)");
+                } else
+                
+                //LUNCH CLOCK-INS
+                //If clocked-in early, snap to scheduled lunch-stop time
+                if ((lt.compareTo(s.getLunchStop()) < 0)
+                && (lt.compareTo(s.getLunchStart()) > 0)){
+                    this.setAdjustedTimestamp((s.getLunchStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                    this.setAdjustmenttype("(Lunch Stop)");
+                } else {
+                    this.setAdjustmenttype("(None)");
+                }
+                break;
+
         }
     }
 
@@ -139,7 +209,31 @@ class Punch {
     }
     
     public String printAdjustedTimestamp(){
-        return "To-do";
+        String s = "";
+        
+        //Add the relevant information
+        s = "#" + this.getBadgeid();
+        
+        //To-do: make this work on a PunchType object
+        switch (this.getPunchtypeid()){
+            case 0:
+                s += " CLOCKED OUT: ";
+                break;
+            case 1:
+                s += " CLOCKED IN: ";
+                break;
+            case 2:
+                s += " TIMED OUT: ";
+        }
+        
+        DateFormat df = new SimpleDateFormat("EEE MM/dd/yyyy HH:mm:ss");
+        Date d = new Date(this.getAdjustedtimestamp());
+        
+        s += (df.format(d)).toUpperCase();
+        
+        s += " " + (this.getAdjustmenttype());
+                
+        return s;
     }
     
 }
