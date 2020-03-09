@@ -26,8 +26,8 @@ class Punch {
     }
     
     Punch(int terminalid, Badge badge, Long timestamp, int punchtypeid){
-        id = 0;   
-        adjustmenttype = null;
+        this.id = 0;   
+        this.adjustmenttype = null;
         
         this.terminalid = terminalid;
         this.badge = badge;
@@ -45,7 +45,7 @@ class Punch {
         LocalTime lt = LocalTime.parse(str);
         
         Long l = this.getOriginaltimestamp() % 86400000;
-        Long daysTime = this.getOriginaltimestamp() - l;
+        Long daysTime = this.getOriginaltimestamp() - l ;
         
         switch (this.getPunchtypeid()){
             case 0:
