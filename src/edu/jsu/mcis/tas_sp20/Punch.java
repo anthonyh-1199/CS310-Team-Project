@@ -38,91 +38,114 @@ class Punch {
     }
     
     public void adjust(Shift s){
-        //Convert LocalTimes to Long timestamps
-        DateFormat df = new SimpleDateFormat("HH:mm:ss");
-        Date d = new Date(this.originaltimestamp);
-        String str = df.format(d);
-        LocalTime lt = LocalTime.parse(str);
-        
-        Long l = this.getOriginaltimestamp() % 86400000;
-        Long daysTime = this.getOriginaltimestamp() - l;
-        
-        //Get the shift timestamps in Gregorian Calendar form
+        //Convert shift times to Gregorian Calenders and Longs
         GregorianCalendar originalTSCal = new GregorianCalendar();
-            originalTSCal.setTimeInMillis(this.getOriginaltimestamp()); //Doesn't give the correct time?
-        GregorianCalendar sStartCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getStart().getHour(), s.getStart().getMinute());
+            originalTSCal.setTimeInMillis(this.getOriginaltimestamp());
+            originalTSCal.clear(GregorianCalendar.SECOND);
+        Long punchTime = originalTSCal.getTimeInMillis();
 
-        GregorianCalendar sStopCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getStop().getHour(), s.getStop().getMinute());
-
-        GregorianCalendar lStartCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getLunchStart().getHour(), s.getLunchStart().getMinute());
-
-        GregorianCalendar lStopCal = new GregorianCalendar(originalTSCal.YEAR, originalTSCal.MONTH, originalTSCal.DAY_OF_MONTH, s.getLunchStop().getHour(), s.getLunchStop().getMinute());
+        GregorianCalendar sStartCal = (GregorianCalendar) originalTSCal.clone();
+        sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart().getHour());
+        sStartCal.set(GregorianCalendar.MINUTE, s.getStart().getMinute());
+        Long sStartLong = sStartCal.getTimeInMillis();
+        
+        GregorianCalendar sStopCal = (GregorianCalendar) originalTSCal.clone();
+        sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop().getHour());
+        sStopCal.set(GregorianCalendar.MINUTE, s.getStop().getMinute());
+        Long sStopLong = sStopCal.getTimeInMillis();
+        
+        GregorianCalendar lStartCal = (GregorianCalendar) originalTSCal.clone();
+        lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart().getHour());
+        lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart().getMinute());
+        Long lStartLong = lStartCal.getTimeInMillis();
+        
+        GregorianCalendar lStopCal = (GregorianCalendar) originalTSCal.clone();
+        lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop().getHour());
+        lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop().getMinute());
+        Long lStopLong = lStopCal.getTimeInMillis();
+        
+        //Convert time ranges to Longs for comparisons
+        long sInterval = s.getInterval() * 60000;
+        long sGrace = s.getGracePeriod() * 60000;
+        long sDock = s.getDock() * 60000;
         
         switch (this.getPunchtypeid()){
             case 0:
                 //SHIFT CLOCK-OUTS
                 //If clocked-out late && within interval, snap to scheduled clock-out time
-                if ((lt.compareTo(s.getStop()) > 0)
-                && (lt.compareTo(s.getStop().plusMinutes(s.getInterval())) < 0)){
-                    this.setAdjustedTimestamp((s.getStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime > sStopLong)
+                && (punchTime < sStopLong + sInterval)){
+                    this.setAdjustedTimestamp(sStopLong);
                     this.setAdjustmenttype("(Shift Stop)");
                 } else
                 
                 //If clocked-out early, but within grace period
-                if (lt.compareTo(s.getStop().minusMinutes(s.getGracePeriod())) > 0){
-                    this.setAdjustedTimestamp((s.getStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime < sStopLong)
+                && (punchTime > sStopLong - sGrace)){
+                    this.setAdjustedTimestamp(sStopLong);
                     this.setAdjustmenttype("(Shift Stop)");
                 } else
                 
                 //If clocked-out early, but outside of grace and within dock
-                if ((lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) <= 0) 
-                && (lt.compareTo(s.getStart().plusMinutes(s.getDock())) >= 0)){
+                if ((punchTime < sStopLong - sGrace) 
+                && (punchTime > sStopLong - sDock)){
                     //Set AdjTime to starting time + dock # of minutes
-                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000
-                    + (s.getDock() * 60000));
+                    this.setAdjustedTimestamp(sStopLong - sDock);
                     this.setAdjustmenttype("(Shift Dock)");
                 } else
                 
                 //LUNCH CLOCK-OUT
                 //If clocked-out late during lunch break, snap to scheduled lunch-start time
-                if ((lt.compareTo(s.getLunchStart()) > 0)
-                && (lt.compareTo(s.getLunchStop()) < 0)){
-                    this.setAdjustedTimestamp((s.getLunchStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime > lStartLong)
+                && (punchTime < lStopLong)){
+                    this.setAdjustedTimestamp(lStartLong);
                     this.setAdjustmenttype("(Lunch Start)");
+                } else {
+                    
+                //Round the timestamp to the nearest Interval
+                    //originalTSCal.set(GregorianCalendar.MINUTE, ((originalTSCal.MINUTE + s.getInterval() - 1) / s.getInterval()) * s.getInterval());
+                    //punchTime = originalTSCal.getTimeInMillis();
+                    this.setAdjustedTimestamp(punchTime);
+                    this.setAdjustmenttype("(None)");
                 }
                 break;
             
             case 1:
                 //SHIFT CLOCK-INS
                 //If clocked-in early && within interval, snap to scheduled clock-in time
-                if ((lt.compareTo(s.getStart()) < 0)
-                && (lt.compareTo(s.getStart().plusMinutes(s.getInterval())) > 0)){
-                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime < sStartLong)
+                && (punchTime > sStartLong - sInterval)){
+                    this.setAdjustedTimestamp(sStartLong);
                     this.setAdjustmenttype("(Shift Start)");
                 } else
         
                 //If clocked-in late, but within grace period
-                if (lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) < 0){
-                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime > sStartLong)
+                && (punchTime < sStartLong - sGrace)){
+                    this.setAdjustedTimestamp(sStartLong);
                     this.setAdjustmenttype("(Shift Start)");
                 } else
         
                 //If clocked-in late, but outside of grace and within dock
-                if ((lt.compareTo(s.getStart().plusMinutes(s.getGracePeriod())) > 0) 
-                && (lt.compareTo(s.getStart().plusMinutes(s.getDock())) <= 0)){
+                if ((punchTime > sStartLong + sGrace) 
+                && (punchTime < sStartLong + sDock)){
                     //Set AdjTime to starting time + dock # of minutes
-                    this.setAdjustedTimestamp((s.getStart()).toSecondOfDay() * 1000 + daysTime + 18000000
-                    + (s.getDock() * 60000));
+                    this.setAdjustedTimestamp(sStartLong + sDock);
                     this.setAdjustmenttype("(Shift Dock)");
                 } else
                 
                 //LUNCH CLOCK-INS
                 //If clocked-in early, snap to scheduled lunch-stop time
-                if ((lt.compareTo(s.getLunchStop()) < 0)
-                && (lt.compareTo(s.getLunchStart()) > 0)){
-                    this.setAdjustedTimestamp((s.getLunchStop()).toSecondOfDay() * 1000 + daysTime + 18000000);
+                if ((punchTime < lStopLong)
+                && (punchTime > lStartLong)){
+                    this.setAdjustedTimestamp(lStopLong);
                     this.setAdjustmenttype("(Lunch Stop)");
                 } else {
+                    
+                //Round the timestamp to the nearest Interval
+                    //originalTSCal.set(GregorianCalendar.MINUTE, ((originalTSCal.MINUTE + s.getInterval() - 1) / s.getInterval()) * s.getInterval());
+                    //punchTime = originalTSCal.getTimeInMillis();
+                    this.setAdjustedTimestamp(punchTime);
                     this.setAdjustmenttype("(None)");
                 }
                 break;
