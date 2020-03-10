@@ -80,7 +80,7 @@ public class TASDatabase {
 
             Badge badge = new Badge(resultSet.getString("id"), resultSet.getString("description"));
 
-            punch = new Punch(terminalID, badge, origTimeStamp, punchTypeID);
+            punch = new Punch(ID, terminalID, badge, origTimeStamp, punchTypeID);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -197,7 +197,7 @@ public class TASDatabase {
         return shift;
     }
 
-    public int insertPunch(Punch p) {   //done?
+    public int insertPunch(Punch p) {
         GregorianCalendar ots = new GregorianCalendar();
         ots.setTimeInMillis(p.getOriginaltimestamp());
         String badgeID = p.getBadge().getID();
