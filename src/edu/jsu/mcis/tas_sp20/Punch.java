@@ -14,8 +14,8 @@ class Punch {
     private String adjustmenttype;
     
     Punch(Badge badge, int terminalid, int punchtypeid){
-        id = 0;   
-        adjustmenttype = null;
+        this.id = 0;   
+        this.adjustmenttype = null;
         
         this.terminalid = terminalid;
         this.badge = badge;
@@ -26,8 +26,20 @@ class Punch {
     }
     
     Punch(int terminalid, Badge badge, Long timestamp, int punchtypeid){
-        id = 0;   
-        adjustmenttype = null;
+        this.id = 0;   
+        this.adjustmenttype = null;
+        
+        this.terminalid = terminalid;
+        this.badge = badge;
+        this.punchtypeid = punchtypeid;
+        
+        this.originaltimestamp = timestamp;
+        this.adjustedTimestamp = this.originaltimestamp;
+    }
+    
+    Punch(int id, int terminalid, Badge badge, Long timestamp, int punchtypeid){
+        this.id = id;   
+        this.adjustmenttype = null;
         
         this.terminalid = terminalid;
         this.badge = badge;
