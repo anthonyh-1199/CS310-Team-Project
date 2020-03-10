@@ -46,7 +46,7 @@ public class TASLogic {
             map.put("badgeid", punch.getBadgeid());
             map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
             map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
-            map.put("adjustmenttype", punch.getAdjustmenttype());
+            map.put("punchdata", punch.getAdjustmenttype());
             mapList.add(map);
         }
 
