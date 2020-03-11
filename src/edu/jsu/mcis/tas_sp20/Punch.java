@@ -90,21 +90,21 @@ class Punch {
                     if ((punchTime >= sStopLong)
                     && (punchTime <= sStopLong + sInterval)){
                         this.setAdjustedTimestamp(sStopLong);
-                        this.setAdjustmenttype("(Shift Stop)");
+                        this.setAdjustmenttype("Shift Stop");
                     } else
 
                     //If clocked-out early, but within grace period
                     if ((punchTime <= sStopLong)
                     && (punchTime >= sStopLong - sGrace)){
                         this.setAdjustedTimestamp(sStopLong);
-                        this.setAdjustmenttype("(Shift Stop)");
+                        this.setAdjustmenttype("Shift Stop");
                     } else
 
                     //If clocked-out early, but outside of grace and within dock
                     if ((punchTime <= sStopLong - sGrace) 
                     && (punchTime >= sStopLong - sDock)){
                         this.setAdjustedTimestamp(sStopLong - sDock);
-                        this.setAdjustmenttype("(Shift Dock)");
+                        this.setAdjustmenttype("Shift Dock");
                     } else
 
                     //LUNCH CLOCK-OUT
@@ -112,7 +112,7 @@ class Punch {
                     if ((punchTime >= lStartLong)
                     && (punchTime <= lStopLong)){
                         this.setAdjustedTimestamp(lStartLong);
-                        this.setAdjustmenttype("(Lunch Start)");
+                        this.setAdjustmenttype("Lunch Start");
                     } else
 
                     //NON-SPECIAL CLOCK-OUT CASES
@@ -124,12 +124,12 @@ class Punch {
                             punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
                         }
                         this.setAdjustedTimestamp(punchTime);
-                        this.setAdjustmenttype("(Interval Round)");
+                        this.setAdjustmenttype("Interval Round");
                     } else 
                     //Make no changes
                     {
                         this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
-                        this.setAdjustmenttype("(None)");
+                        this.setAdjustmenttype("None");
                     }
                     break;
 
@@ -139,21 +139,21 @@ class Punch {
                     if ((punchTime <= sStartLong)
                     && (punchTime >= sStartLong - sInterval)){
                         this.setAdjustedTimestamp(sStartLong);
-                        this.setAdjustmenttype("(Shift Start)");
+                        this.setAdjustmenttype("Shift Start");
                     } else
 
                     //If clocked-in late, but within grace period
                     if ((punchTime >= sStartLong)
                     && (punchTime <= sStartLong + sGrace)){
                         this.setAdjustedTimestamp(sStartLong);
-                        this.setAdjustmenttype("(Shift Start)");
+                        this.setAdjustmenttype("Shift Start");
                     } else
 
                     //If clocked-in late, but outside of grace and within dock
                     if ((punchTime >= sStartLong + sGrace) 
                     && (punchTime <= sStartLong + sDock)){
                         this.setAdjustedTimestamp(sStartLong + sDock);
-                        this.setAdjustmenttype("(Shift Dock)");
+                        this.setAdjustmenttype("Shift Dock");
                     } else
 
                     //LUNCH CLOCK-INS
@@ -161,7 +161,7 @@ class Punch {
                     if ((punchTime <= lStopLong)
                     && (punchTime >= lStartLong)){
                         this.setAdjustedTimestamp(lStopLong);
-                        this.setAdjustmenttype("(Lunch Stop)");
+                        this.setAdjustmenttype("Lunch Stop");
                     } else
 
                     //NON-SPECIAL CLOCK-IN CASES
@@ -173,12 +173,12 @@ class Punch {
                             punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
                         }
                         this.setAdjustedTimestamp(punchTime);
-                        this.setAdjustmenttype("(Interval Round)");
+                        this.setAdjustmenttype("Interval Round");
                     } else 
                     //Make no changes
                     {
                         this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
-                        this.setAdjustmenttype("(None)");
+                        this.setAdjustmenttype("None");
                     }
                     break;
             }
@@ -192,12 +192,12 @@ class Punch {
                     punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
                 }
                 this.setAdjustedTimestamp(punchTime);
-                this.setAdjustmenttype("(Interval Round)");
+                this.setAdjustmenttype("Interval Round");
             } else 
             //Make no changes
             {
                 this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
-                this.setAdjustmenttype("(None)");
+                this.setAdjustmenttype("None");
             }
         }
     }
@@ -314,7 +314,7 @@ class Punch {
         
         s += (df.format(d)).toUpperCase();
         
-        s += " " + (this.getAdjustmenttype());
+        s += " (" + (this.getAdjustmenttype()) + ")";
                 
         return s;
     }
