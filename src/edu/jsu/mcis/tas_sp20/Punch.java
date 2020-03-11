@@ -7,6 +7,10 @@ import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.time.*;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 class Punch {
     private int id, terminalid, punchtypeid;
     private Badge badge;

@@ -63,8 +63,6 @@ public class Shift {
     public LocalTime getLunchStop () {return lunchStop;}
 
 
-
-
     // toString method
     @Override
     public String toString(){
