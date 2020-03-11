@@ -263,15 +263,12 @@ public class TASDatabase {
                 resultSet = pst.getResultSet();
                 
                 while(resultSet.next()){
-                    int terminalId = resultSet.getInt("terminalid");
-                    long originalTimeStamp = resultSet.getTimestamp("originaltimestamp").getTime();
-                    int punchTypeId = resultSet.getInt("punchtypeid");
+                    int punchId = resultSet.getInt("id");
                     
-                    Punch temp = new Punch(terminalId, badge, originalTimeStamp, punchTypeId);
+                    Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                     
                     isPaired = !isPaired;
-                    //lastId = resultSet.getInt
                 }
                 
                 if(!isPaired){
@@ -284,11 +281,9 @@ public class TASDatabase {
                 resultSet = pst.getResultSet();
                 resultSet.first();
                 
-                int terminalId = resultSet.getInt("terminalid");
-                long originalTimeStamp = resultSet.getTimestamp("originaltimestamp").getTime();
-                int punchTypeId = resultSet.getInt("punchtypeid");
+                int punchId = resultSet.getInt("id");
 
-                Punch temp = new Punch(terminalId, badge, originalTimeStamp, punchTypeId);
+                Punch temp = this.getPunch(punchId);
                 dailyPunchList.add(temp);     
                 }
             }
