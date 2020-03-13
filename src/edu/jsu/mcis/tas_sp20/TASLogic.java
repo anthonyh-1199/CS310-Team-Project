@@ -31,7 +31,7 @@ public class TASLogic {
         return total;
     }
 
-    public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){//test
+    public static String getPunchListAsJSON(ArrayList<Punch> dailypunchlist){
         HashMap<String, String> map;
         ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
 
@@ -54,7 +54,7 @@ public class TASLogic {
 //        HashMap<String, String> map;
 //        ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
 //
-//        for (Punch punch : punchList) {
+//        for (Punch punch : dailypunchlist) {
 //            map = new HashMap<>();
 //            map.put("id", String.valueOf(punch.getId()));
 //            map.put("terminalid", String.valueOf(punch.getTerminalid()));
@@ -62,7 +62,7 @@ public class TASLogic {
 //            map.put("badgeid", punch.getBadgeid());
 //            map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
 //            map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
-//            map.put("adjustmenttype", punch.getAdjustmenttype());
+//            map.put("punchdata", punch.getAdjustmenttype());
 //            mapList.add(map);
 //        }
 //
@@ -70,7 +70,6 @@ public class TASLogic {
 //        map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
 //        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)));
 //        mapList.add(map);
-//
 //
 //        return JSONValue.toJSONString(mapList);
 //    }

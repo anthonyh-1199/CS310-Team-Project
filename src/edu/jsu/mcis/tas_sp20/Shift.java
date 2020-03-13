@@ -6,23 +6,12 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 public class Shift {
     // TODO: Determine data types
     String description;
-    int ID, interval, gracePeriod, dock, lunchDeduct, lunchDuration;
-    LocalTime start, stop, lunchStart, lunchStop;
+    DailySchedule schedule;
 
-
-    Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock, LocalTime
-            lunchStart, LocalTime lunchStop, int lunchDeduct) {
-        this.ID = ID;
+    Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock,
+    LocalTime lunchStart, LocalTime lunchStop, int lunchDeduct) {
+        schedule = new DailySchedule(ID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
         this.description = description;
-        this.start = start;
-        this.stop = stop;
-        this.interval = interval;
-        this.gracePeriod = gracePeriod;
-        this.dock = dock;
-        this.lunchStart = lunchStart;
-        this.lunchStop = lunchStop;
-        this.lunchDeduct = lunchDeduct;
-        this.lunchDuration = shiftDuration(lunchStart,lunchStop);
     }
 
     private int shiftDuration (LocalTime start, LocalTime stop) {
@@ -35,32 +24,32 @@ public class Shift {
     // Setter methods
     public void setDescription (String description) {this.description = description;}
 
-    public void setID (int ID) {this.ID = ID;}
-    public void setDock (int dock) {this.dock = dock;}
-    public void setInterval (int interval) {this.interval = interval;}
-    public void setGracePeriod (int gracePeriod) {this.gracePeriod = gracePeriod;}
-    public void setLunchDeduct (int lunchDeduct) {this.lunchDeduct = lunchDeduct;}
+    public void setID (int ID) {schedule.setID(ID);}
+    public void setDock (int dock) {schedule.setDock(dock);}
+    public void setInterval (int interval) {schedule.setInterval(interval);}
+    public void setGracePeriod (int gracePeriod) {schedule.setGracePeriod(gracePeriod);}
+    public void setLunchDeduct (int lunchDeduct) {schedule.setLunchDeduct(lunchDeduct);}
 
-    public void setStart (LocalTime start) {this.start = start;}
-    public void setStop (LocalTime stop) {this.stop = stop;}
-    public void setLunchStart (LocalTime lunchStart) {this.lunchStart = lunchStart;}
-    public void setLunchStop (LocalTime lunchStop) {this.lunchStop = lunchStop;}
+    public void setStart (LocalTime start) {schedule.setStart(start);}
+    public void setStop (LocalTime stop) {schedule.setStop(stop);}
+    public void setLunchStart (LocalTime lunchStart) {schedule.setLunchStart(lunchStart);}
+    public void setLunchStop (LocalTime lunchStop) {schedule.setLunchStop(lunchStop);}
 
 
     // Getter methods
     public String getDescription () {return description;}
 
-    public int getID () {return ID;}
-    public int getDock () {return dock;}
-    public int getInterval () { return interval; }
-    public int getGracePeriod () {return gracePeriod;}
-    public int getLunchDeduct () {return lunchDeduct;}
-    public int getLunchDuration() {return lunchDuration;}
+    public int getID () {return schedule.getID();}
+    public int getDock () {return schedule.getDock();}
+    public int getInterval () { return schedule.getInterval(); }
+    public int getGracePeriod () {return schedule.getGracePeriod();}
+    public int getLunchDeduct () {return schedule.getLunchDeduct();}
+    public int getLunchDuration() {return schedule.getLunchDuration();}
 
-    public LocalTime getStart () {return start;}
-    public LocalTime getStop () {return stop;}
-    public LocalTime getLunchStart () {return lunchStart;}
-    public LocalTime getLunchStop () {return lunchStop;}
+    public LocalTime getStart () {return schedule.getStart();}
+    public LocalTime getStop () {return schedule.getStop();}
+    public LocalTime getLunchStart () {return schedule.getLunchStart();}
+    public LocalTime getLunchStop () {return schedule.getLunchStop();}
 
 
 
@@ -68,7 +57,7 @@ public class Shift {
     // toString method
     @Override
     public String toString(){
-        String s = description + ": " + start + " - " + stop + " (" + shiftDuration(start, stop) + " minutes); Lunch: " + lunchStart + " - " + lunchStop + " (" + lunchDuration + " minutes)";
+        String s = description + ": " + schedule.toString();
         return s;
     }
 }
