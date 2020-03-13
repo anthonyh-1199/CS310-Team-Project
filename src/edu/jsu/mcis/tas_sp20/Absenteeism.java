@@ -21,7 +21,7 @@ public class Absenteeism {
     public void setPercentage (double percentage) {this.percentage = percentage;}
 
     // Getter methods
-    public String getID (String id) {return id;}
+    public Badge getID (Badge id) {return id;}
     public Long getTimestamp (long timestamp) {return timestamp;}
     public double getPercentage (double percentage) {return percentage;}
 
