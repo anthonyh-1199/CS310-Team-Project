@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 
 public class TASDatabase {
     private Connection conn;
+    
+    public final int DAY_IN_MILLIS = 86400000;
 
     public static void main(String[] args) {
     }
@@ -160,7 +162,7 @@ public class TASDatabase {
         try {
             query = "SELECT shiftid FROM employee WHERE badgeid = ?";
             pst = conn.prepareStatement(query);
-            pst.setString(1, badge.getID());
+            pst.setString(1, badge.getId());
 
             pst.execute();
             resultSet = pst.getResultSet();
@@ -200,7 +202,7 @@ public class TASDatabase {
     public int insertPunch(Punch p) {
         GregorianCalendar ots = new GregorianCalendar();
         ots.setTimeInMillis(p.getOriginaltimestamp());
-        String badgeID = p.getBadge().getID();
+        String badgeID = p.getBadge().getId();
         int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();
 
         try {
@@ -242,7 +244,7 @@ public class TASDatabase {
         timeLike += "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
         
-        Timestamp nextDay = new Timestamp(ts + 86400000);
+        Timestamp nextDay = new Timestamp(ts + this.DAY_IN_MILLIS);
         String timeLikeNext = nextDay.toString().substring(0, 11);
         timeLikeNext += "%";
 
@@ -256,7 +258,7 @@ public class TASDatabase {
             if (conn.isValid(0)){
                 query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                pst.setString(1, badge.getID());
+                pst.setString(1, badge.getId());
                 pst.setString(2, timeLike);
 
                 pst.execute();
@@ -274,7 +276,7 @@ public class TASDatabase {
                 if(!isPaired){
                 query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                pst.setString(1, badge.getID());
+                pst.setString(1, badge.getId());
                 pst.setString(2, timeLikeNext);
                 
                 pst.execute();
@@ -292,5 +294,103 @@ public class TASDatabase {
         }
 
         return dailyPunchList;
+    }
+    
+    public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
+        ArrayList<Punch> returnArray = new ArrayList<>();
+        
+        for(int i = 0; i < 7; i++){
+            ArrayList<Punch> temp = this.getDailyPunchList(badge, ts + (this.DAY_IN_MILLIS * i));
+            
+            for(Punch p: temp){
+                returnArray.add(p);
+            }
+        }
+        
+        return returnArray;
+    }
+    
+    public Absenteeism getAbsenteeism(String badgeId, long ts){
+        Timestamp timestamp = new Timestamp(ts);
+        Absenteeism returnAbsenteeism = null;
+        
+        try {
+            PreparedStatement pst;
+            ResultSet resultSet;
+            String query;
+
+            if (conn.isValid(0)){
+                query = "SELECT * FROM absenteeism WHERE badgeid = ? AND payperiod = ?";
+                pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                pst.setString(1, badgeId);
+                pst.setTimestamp(2, timestamp);
+
+                pst.execute();
+                resultSet = pst.getResultSet();
+                
+                while(resultSet.next()){
+                    double percent = resultSet.getDouble("percent");
+                    
+                    returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return returnAbsenteeism;
+
+    }
+    
+    public void insertAbsenteeism(Absenteeism abs){
+        try {
+            this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
+        } catch (java.lang.NullPointerException e){
+            try {
+                PreparedStatement pst;
+                String query;
+
+                //Try to request abs, if null, insert
+
+                if (conn.isValid(0)){
+                    //Insert
+                    query = "INSERT INTO absenteeism (badgeid, payperiod, percentage) VALUES (?, ?, ?)";
+                    pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    pst.setString(1, abs.getBadgeId());
+                    pst.setTimestamp(2, abs.getTimestamp());
+                    pst.setDouble(3, abs.getPercentage());
+
+                    pst.execute();
+                }
+
+                return;
+            } catch (Exception f){
+                f.printStackTrace();
+            }
+
+        try{
+            PreparedStatement pst;
+            String query;
+            
+            //Try to request abs, if not null, update
+
+            if (conn.isValid(0)){
+
+
+                    //Update
+                    query = "UPDATE absenteeism SET percentage = ? WHERE badgeid = ? AND payperiod = ?";
+                    pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    pst.setDouble(1, abs.getPercentage());
+                    pst.setString(2, abs.getBadgeId());
+                    pst.setTimestamp(3, abs.getTimestamp());
+                    
+                    pst.execute();
+                }
+            } catch (Exception f){
+                e.printStackTrace();
+            }
+        
+        return;
+        }
     }
 }

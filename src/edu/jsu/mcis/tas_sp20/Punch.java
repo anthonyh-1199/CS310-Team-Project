@@ -265,7 +265,7 @@ class Punch {
     }
     
     public String getBadgeid(){
-        return (this.getBadge()).getID();
+        return (this.getBadge()).getId();
     }
     
     /*Print-out methods*/

@@ -25,7 +25,7 @@ public class Badge {
      * Getter for the id of this badge
      * @return String id of this badge
      */
-    public String getID(){
+    public String getId(){
         return this.id;
     }
     
