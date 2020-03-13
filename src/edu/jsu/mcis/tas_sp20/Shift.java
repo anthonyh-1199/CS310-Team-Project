@@ -4,14 +4,18 @@ import java.time.LocalTime;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 public class Shift {
-    // TODO: Determine data types
     String description;
     DailySchedule schedule;
 
-    Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock,
+    public Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock,
     LocalTime lunchStart, LocalTime lunchStop, int lunchDeduct) {
         schedule = new DailySchedule(ID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
         this.description = description;
+    }
+
+    public Shift(String description, DailySchedule schedule) {
+        this.description = description;
+        this.schedule = schedule;
     }
 
     private int shiftDuration (LocalTime start, LocalTime stop) {
