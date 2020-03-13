@@ -4,31 +4,31 @@ import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 
 public class Absenteeism {
-    String id;
-    Long payperiod;
+    Badge id;
+    long timestamp;
     double percentage;
 
-    Absenteeism (Long payperiod, String id) {
-        this.payperiod = payperiod;
+    Absenteeism (Badge id, long timestamp, double percentage) {
+        this.timestamp = timestamp;
         this.id = id;
 
-        percentage = 0;
+        this.percentage = percentage;
     }
 
     // Setter methods
-    public void setID (String id) {this.id = id;}
-    public void setPayperiod (Long payperiod) {this.payperiod = payperiod;}
+    public void setID (Badge id) {this.id = id;}
+    public void setTimestamp (Long timestamp) {this.timestamp = timestamp;}
     public void setPercentage (double percentage) {this.percentage = percentage;}
 
     // Getter methods
     public String getID (String id) {return id;}
-    public Long getPayperiod (Long payperiod) {return payperiod;}
+    public Long getTimestamp (long timestamp) {return timestamp;}
     public double getPercentage (double percentage) {return percentage;}
 
     // toString method
     @Override
     public String toString() {
-        String s = id + "(Pay Period Starting " + payperiod + "): " + percentage;
+        String s = id + "(Pay Period Starting " + timestamp + "): " + percentage;
         return s;
     }
 }
