@@ -111,7 +111,7 @@ public class TASDatabase {
 
         return badge;
     }
-
+    
     public Shift getShift(int ID) {
         Shift shift = null;
         String query;
@@ -119,7 +119,7 @@ public class TASDatabase {
         ResultSet resultSet;
 
         try {
-            query = "SELECT * FROM shift WHERE id=?";
+            query = "SELECT * FROM dailyschedule WHERE id=?";
             pst = conn.prepareStatement(query);
             pst.setInt(1, ID);
 
@@ -129,7 +129,6 @@ public class TASDatabase {
             java.sql.Time temp;
 
             int ShiftID = resultSet.getInt("id");
-            String description = resultSet.getString("description");
             temp = resultSet.getTime("start");
             LocalTime start = temp.toLocalTime();
             temp = resultSet.getTime("stop");
@@ -142,7 +141,19 @@ public class TASDatabase {
             temp = resultSet.getTime("lunchstop");
             LocalTime lunchStop = temp.toLocalTime();
             int lunchDeduct = resultSet.getInt("lunchdeduct");
-            shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            
+            query = "SELECT * FROM shift WHERE id=?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, ID);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+            
+            String description = resultSet.getString("description");
+            
+            DailySchedule schedule = new DailySchedule(ShiftID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            shift = new Shift(description, schedule);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -165,31 +176,10 @@ public class TASDatabase {
             pst.execute();
             resultSet = pst.getResultSet();
             resultSet.first();
-            java.sql.Time temp;
 
             int shiftID = resultSet.getInt("shiftid");
-            query = "SELECT * FROM shift WHERE id=?";
-            pst = conn.prepareStatement(query);
-            pst.setInt(1, shiftID);
-            pst.execute();
-
-            resultSet = pst.getResultSet();
-            resultSet.first();
-
-            String description = resultSet.getString("description");
-            temp = resultSet.getTime("start");
-            LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime("stop");
-            LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt("interval");
-            int gracePeriod = resultSet.getInt("graceperiod");
-            int dock = resultSet.getInt("dock");
-            temp = resultSet.getTime("lunchstart");
-            LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime("lunchstop");
-            LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt("lunchdeduct");
-            shift = new Shift(shiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            
+            shift = getShift(shiftID);
         } catch (Exception e) {
             e.printStackTrace();
         }
