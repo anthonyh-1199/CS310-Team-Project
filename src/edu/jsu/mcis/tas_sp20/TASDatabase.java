@@ -9,7 +9,7 @@ import java.util.Calendar;
 
 public class TASDatabase {
     private Connection conn;
-    
+
     public final int DAY_IN_MILLIS = 86400000;
 
     public static void main(String[] args) {
@@ -121,7 +121,7 @@ public class TASDatabase {
         ResultSet resultSet;
 
         try {
-            query = "SELECT * FROM shift WHERE id=?";
+            query = "SELECT * FROM dailyschedule WHERE id=?";
             pst = conn.prepareStatement(query);
             pst.setInt(1, ID);
 
@@ -130,9 +130,8 @@ public class TASDatabase {
             resultSet.first();
             java.sql.Time temp;
 
-            int ShiftID = resultSet.getInt(1);
-            String description = resultSet.getString(2);
-            temp = resultSet.getTime(3);
+            int ShiftID = resultSet.getInt("id");
+            temp = resultSet.getTime("start");
             LocalTime start = temp.toLocalTime();
             temp = resultSet.getTime(4);
             LocalTime stop = temp.toLocalTime();
@@ -143,8 +142,20 @@ public class TASDatabase {
             LocalTime lunchStart = temp.toLocalTime();
             temp = resultSet.getTime(9);
             LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt(10);
-            shift = new Shift(ShiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            int lunchDeduct = resultSet.getInt("lunchdeduct");
+
+            query = "SELECT * FROM shift WHERE id=?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, ID);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+
+            String description = resultSet.getString("description");
+
+            DailySchedule schedule = new DailySchedule(ShiftID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            shift = new Shift(description, schedule);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -167,31 +178,48 @@ public class TASDatabase {
             pst.execute();
             resultSet = pst.getResultSet();
             resultSet.first();
-            java.sql.Time temp;
 
-            int shiftID = resultSet.getInt(1);
-            query = "SELECT * FROM shift WHERE id=?";
+            int shiftID = resultSet.getInt("shiftid");
+
+            shift = getShift(shiftID);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return shift;
+    }
+
+    public Shift getShift(Badge badge, Long timestamp){
+        Shift shift = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+            query = "SELECT * FROM scheduleoverride";
             pst = conn.prepareStatement(query);
-            pst.setInt(1, shiftID);
-            pst.execute();
 
+            pst.execute();
             resultSet = pst.getResultSet();
             resultSet.first();
+            Long startTimestamp;
+            Long endTimestamp;
+            String badgeid;
 
-            String description = resultSet.getString(2);
-            temp = resultSet.getTime(3);
-            LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime(4);
-            LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt(5);
-            int gracePeriod = resultSet.getInt(6);
-            int dock = resultSet.getInt(7);
-            temp = resultSet.getTime(8);
-            LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime(9);
-            LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt(10);
-            shift = new Shift(shiftID, description, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            //Get the default value to return if none is found
+            shift = getShift(badge);
+
+            //Loop through scheduleoverride and check for any applicable overrides
+            while (resultSet.next()){
+                startTimestamp = resultSet.getTimestamp("start").getTime();
+                endTimestamp = resultSet.getTimestamp("start").getTime();
+                badgeid = resultSet.getString("badgeid");
+
+                if ((timestamp >= startTimestamp) && (timestamp <= endTimestamp)
+                && ((badgeid == null) || (badgeid.equals( badge.getID())))){
+                    shift = getShift(resultSet.getInt("dailyscheduleid"));
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -295,7 +323,7 @@ public class TASDatabase {
 
         return dailyPunchList;
     }
-    
+
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTimeInMillis(ts);
@@ -306,18 +334,18 @@ public class TASDatabase {
         gc.set(Calendar.MILLISECOND, 0);
         long tsNew = gc.getTimeInMillis();
         ArrayList<Punch> returnArray = new ArrayList<>();
-        
+
         for(int i = 0; i < 7; i++){
             ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
-            
+
             for(Punch p: temp){
                 returnArray.add(p);
             }
         }
-        
+
         return returnArray;
     }
-    
+
     public Absenteeism getAbsenteeism(String badgeId, long ts){
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTimeInMillis(ts);
@@ -327,10 +355,10 @@ public class TASDatabase {
         gc.set(Calendar.SECOND, 0);
         gc.set(Calendar.MILLISECOND, 0);
         long tsNew = gc.getTimeInMillis();
-        
+
         Timestamp timestamp = new Timestamp(tsNew);
         Absenteeism returnAbsenteeism = null;
-                
+
         try {
             PreparedStatement pst;
             ResultSet resultSet;
@@ -345,27 +373,27 @@ public class TASDatabase {
                 pst.execute();
                 resultSet = pst.getResultSet();
                 resultSet.first();
-                
+
                 double percent = resultSet.getDouble("percentage");
-                    
+
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
             //e.printStackTrace();
         }
-        
+
         return returnAbsenteeism;
 
     }
-    
+
     public void insertAbsenteeism(Absenteeism abs){
-        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());        
-        
+        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
+
         try {
             if(ab == null){
                 PreparedStatement pst;
                 String query;
-                
+
                 //Try to request abs, if null, insert
 
                 if (conn.isValid(0)){
