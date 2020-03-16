@@ -186,6 +186,44 @@ public class TASDatabase {
 
         return shift;
     }
+    
+    public Shift getShift(Badge badge, Long timestamp){
+        Shift shift = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+            query = "SELECT * FROM scheduleoverride";
+            pst = conn.prepareStatement(query);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+            Long startTimestamp;
+            Long endTimestamp;
+            String badgeid;
+            
+            //Get the default value to return if none is found
+            shift = getShift(badge);
+            
+            //Loop through scheduleoverride and check for any applicable overrides
+            while (resultSet.next()){
+                startTimestamp = resultSet.getTimestamp("start").getTime();
+                endTimestamp = resultSet.getTimestamp("start").getTime();
+                badgeid = resultSet.getString("badgeid");
+                
+                if ((timestamp >= startTimestamp) && (timestamp <= endTimestamp)
+                && ((badgeid == null) || (badgeid.equals( badge.getID())))){
+                    shift = getShift(resultSet.getInt("dailyscheduleid"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return shift;
+    }
 
     public int insertPunch(Punch p) {
         GregorianCalendar ots = new GregorianCalendar();
