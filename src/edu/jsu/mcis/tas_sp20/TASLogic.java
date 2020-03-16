@@ -5,6 +5,7 @@ import org.json.simple.JSONValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.lang.Math;
+import java.text.DecimalFormat;
 
 public class TASLogic {
 
@@ -78,7 +79,8 @@ public class TASLogic {
 
         map = new HashMap<>();
         map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
-        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)) + '%');
+        map.put("absenteeism", String.valueOf((new DecimalFormat("0.00")).
+                format(calculateAbsenteeism(punchList, shift)) + '%'));
         mapList.add(map);
 
 
