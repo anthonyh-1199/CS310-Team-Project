@@ -351,7 +351,7 @@ public class TASDatabase {
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         
         return returnAbsenteeism;
@@ -359,16 +359,12 @@ public class TASDatabase {
     }
     
     public void insertAbsenteeism(Absenteeism abs){
-        System.out.println("Retrieving ab");
-        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
-        System.out.println("Retrieved ab");
-        
+        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());        
         
         try {
             if(ab == null){
                 PreparedStatement pst;
                 String query;
-                System.out.println("Inserting");
                 
                 //Try to request abs, if null, insert
 
@@ -385,7 +381,6 @@ public class TASDatabase {
             }else{
                 PreparedStatement pst;
                 String query;
-                System.out.println("Updating");
 
                 //Try to request abs, if not null, update
 
@@ -399,8 +394,6 @@ public class TASDatabase {
                     pst.setTimestamp(3, abs.getTimestamp());
 
                     pst.execute();
-                    
-                    System.out.println((new Absenteeism(abs.getBadgeId(), abs.getTimestampLong(), abs.getPercentage())).toString());
                 }
             }
         } catch (Exception e){

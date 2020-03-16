@@ -4,6 +4,7 @@ import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.lang.Math;
 
 public class TASLogic {
 
@@ -54,8 +55,8 @@ public class TASLogic {
     public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
         double minWorked = calculateTotalMinutes(punchlist, s);
         double minScheduled = 2400.0;
-        double percentage = (1 - minWorked / minScheduled) * 100;
-
+        double percentage = Math.round((1 - minWorked / minScheduled) * 10000);
+        percentage = percentage / 100;
         return percentage;
     }
 
