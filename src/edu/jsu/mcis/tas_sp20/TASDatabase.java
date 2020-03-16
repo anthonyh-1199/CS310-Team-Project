@@ -1,11 +1,11 @@
 package edu.jsu.mcis.tas_sp20;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class TASDatabase {
     private Connection conn;
@@ -311,9 +311,18 @@ public class TASDatabase {
     }
     
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        Timestamp timestamp = new Timestamp(ts);
-        Absenteeism returnAbsenteeism = null;
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTimeInMillis(ts);
+        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
+        gc.set(Calendar.HOUR, 0);
+        gc.set(Calendar.MINUTE, 0);
+        gc.set(Calendar.SECOND, 0);
+        gc.set(Calendar.MILLISECOND, 0);
+        long tsNew = gc.getTimeInMillis();
         
+        Timestamp timestamp = new Timestamp(tsNew);
+        Absenteeism returnAbsenteeism = null;
+                
         try {
             PreparedStatement pst;
             ResultSet resultSet;
@@ -327,12 +336,11 @@ public class TASDatabase {
 
                 pst.execute();
                 resultSet = pst.getResultSet();
+                resultSet.first();
                 
-                while(resultSet.next()){
-                    double percent = resultSet.getDouble("percent");
+                double percent = resultSet.getDouble("percentage");
                     
-                    returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
-                }
+                returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -343,13 +351,17 @@ public class TASDatabase {
     }
     
     public void insertAbsenteeism(Absenteeism abs){
+        System.out.println("Retrieving ab");
+        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
+        System.out.println("Retrieved ab");
+        
+        
         try {
-            this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
-        } catch (java.lang.NullPointerException e){
-            try {
+            if(ab == null){
                 PreparedStatement pst;
                 String query;
-
+                System.out.println("Inserting");
+                
                 //Try to request abs, if null, insert
 
                 if (conn.isValid(0)){
@@ -362,35 +374,29 @@ public class TASDatabase {
 
                     pst.execute();
                 }
+            }else{
+                PreparedStatement pst;
+                String query;
+                System.out.println("Updating");
 
-                return;
-            } catch (Exception f){
-                f.printStackTrace();
-            }
+                //Try to request abs, if not null, update
 
-        try{
-            PreparedStatement pst;
-            String query;
-            
-            //Try to request abs, if not null, update
-
-            if (conn.isValid(0)){
-
-
+                if (conn.isValid(0)){
                     //Update
-                    query = "UPDATE absenteeism SET percentage = ? WHERE badgeid = ? AND payperiod = ?";
+                    query = "UPDATE absenteeism SET percentage = ?, payperiod = ? WHERE payperiod = ? AND badgeid = ?";
                     pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                     pst.setDouble(1, abs.getPercentage());
-                    pst.setString(2, abs.getBadgeId());
+                    pst.setString(4, abs.getBadgeId());
+                    pst.setTimestamp(2, abs.getTimestamp());
                     pst.setTimestamp(3, abs.getTimestamp());
-                    
+
                     pst.execute();
+                    
+                    System.out.println((new Absenteeism(abs.getBadgeId(), abs.getTimestampLong(), abs.getPercentage())).toString());
                 }
-            } catch (Exception f){
-                e.printStackTrace();
             }
-        
-        return;
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 }
