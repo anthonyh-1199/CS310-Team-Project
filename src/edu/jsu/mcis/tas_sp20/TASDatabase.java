@@ -133,14 +133,14 @@ public class TASDatabase {
             int ShiftID = resultSet.getInt("id");
             temp = resultSet.getTime("start");
             LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime(4);
+            temp = resultSet.getTime("stop");
             LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt(5);
-            int gracePeriod = resultSet.getInt(6);
-            int dock = resultSet.getInt(7);
-            temp = resultSet.getTime(8);
+            int interval = resultSet.getInt("interval");
+            int gracePeriod = resultSet.getInt("graceperiod");
+            int dock = resultSet.getInt("dock");
+            temp = resultSet.getTime("lunchstart");
             LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime(9);
+            temp = resultSet.getTime("lunchstop");
             LocalTime lunchStop = temp.toLocalTime();
             int lunchDeduct = resultSet.getInt("lunchdeduct");
 
