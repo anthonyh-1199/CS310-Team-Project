@@ -52,16 +52,11 @@ public class TASLogic {
 
     // TODO: Find how to get arrayList from getPayPeriodPunchList
     public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
-        double minWorked;
-        double percentage;
+        double minWorked = calculateTotalMinutes(punchlist, s);
+        double minScheduled = 2400.0;
+        double percentage = (1 - minWorked / minScheduled) * 100;
 
-
-
-        for (Punch punch : punchlist){
-            calculateTotalMinutes(punchlist, s);
-        }
-
-        return 0;
+        return percentage;
     }
 
 //    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test

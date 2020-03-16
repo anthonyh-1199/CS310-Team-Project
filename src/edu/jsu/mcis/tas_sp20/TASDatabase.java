@@ -297,10 +297,18 @@ public class TASDatabase {
     }
     
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTimeInMillis(ts);
+        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
+        gc.set(Calendar.HOUR, 0);
+        gc.set(Calendar.MINUTE, 0);
+        gc.set(Calendar.SECOND, 0);
+        gc.set(Calendar.MILLISECOND, 0);
+        long tsNew = gc.getTimeInMillis();
         ArrayList<Punch> returnArray = new ArrayList<>();
         
         for(int i = 0; i < 7; i++){
-            ArrayList<Punch> temp = this.getDailyPunchList(badge, ts + (this.DAY_IN_MILLIS * i));
+            ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
             
             for(Punch p: temp){
                 returnArray.add(p);
