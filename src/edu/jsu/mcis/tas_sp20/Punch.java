@@ -54,139 +54,173 @@ class Punch {
         cal.setTimeInMillis(this.originaltimestamp);
         int day = cal.get(Calendar.DAY_OF_WEEK);
 
-        GregorianCalendar originalTSCal = new GregorianCalendar();
+        if (day != Calendar.SATURDAY && day != Calendar.SUNDAY){
+            GregorianCalendar originalTSCal = new GregorianCalendar();
             originalTSCal.setTimeInMillis(this.getOriginaltimestamp());
             originalTSCal.clear(GregorianCalendar.SECOND);
-        Long punchTime = originalTSCal.getTimeInMillis();
+            Long punchTime = originalTSCal.getTimeInMillis();
 
-        GregorianCalendar sStartCal = (GregorianCalendar) originalTSCal.clone();
-        sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart(day).getHour());
-        sStartCal.set(GregorianCalendar.MINUTE, s.getStart(day).getMinute());
-        Long sStartLong = sStartCal.getTimeInMillis();
-        
-        GregorianCalendar sStopCal = (GregorianCalendar) originalTSCal.clone();
-        sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop(day).getHour());
-        sStopCal.set(GregorianCalendar.MINUTE, s.getStop(day).getMinute());
-        Long sStopLong = sStopCal.getTimeInMillis();
-        
-        GregorianCalendar lStartCal = (GregorianCalendar) originalTSCal.clone();
-        lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart(day).getHour());
-        lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart(day).getMinute());
-        Long lStartLong = lStartCal.getTimeInMillis();
-        
-        GregorianCalendar lStopCal = (GregorianCalendar) originalTSCal.clone();
-        lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop(day).getHour());
-        lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop(day).getMinute());
-        Long lStopLong = lStopCal.getTimeInMillis();
-        
-        //Convert time ranges to Longs for comparisons
-        long sInterval = s.getInterval(day) * 60000;
-        long sGrace = s.getGracePeriod(day) * 60000;
-        long sDock = s.getDock(day) * 60000;
-        
-        //Check if the punch was during a weekend
-        if ((originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SATURDAY) && (originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SUNDAY)){
-            switch (this.getPunchtypeid()){
-                case 0:
-                    //SHIFT CLOCK-OUTS
-                    //If clocked-out late && within interval, snap to scheduled clock-out time
-                    if ((punchTime >= sStopLong)
-                    && (punchTime <= sStopLong + sInterval)){
-                        this.setAdjustedTimestamp(sStopLong);
-                        this.setAdjustmenttype("Shift Stop");
-                    } else
+            GregorianCalendar sStartCal = (GregorianCalendar) originalTSCal.clone();
+            sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart(day).getHour());
+            sStartCal.set(GregorianCalendar.MINUTE, s.getStart(day).getMinute());
+            Long sStartLong = sStartCal.getTimeInMillis();
 
-                    //If clocked-out early, but within grace period
-                    if ((punchTime <= sStopLong)
-                    && (punchTime >= sStopLong - sGrace)){
-                        this.setAdjustedTimestamp(sStopLong);
-                        this.setAdjustmenttype("Shift Stop");
-                    } else
+            GregorianCalendar sStopCal = (GregorianCalendar) originalTSCal.clone();
+            sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop(day).getHour());
+            sStopCal.set(GregorianCalendar.MINUTE, s.getStop(day).getMinute());
+            Long sStopLong = sStopCal.getTimeInMillis();
 
-                    //If clocked-out early, but outside of grace and within dock
-                    if ((punchTime <= sStopLong - sGrace) 
-                    && (punchTime >= sStopLong - sDock)){
-                        this.setAdjustedTimestamp(sStopLong - sDock);
-                        this.setAdjustmenttype("Shift Dock");
-                    } else
+            GregorianCalendar lStartCal = (GregorianCalendar) originalTSCal.clone();
+            lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart(day).getHour());
+            lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart(day).getMinute());
+            Long lStartLong = lStartCal.getTimeInMillis();
 
-                    //LUNCH CLOCK-OUT
-                    //If clocked-out late during lunch break, snap to scheduled lunch-start time
-                    if ((punchTime >= lStartLong)
-                    && (punchTime <= lStopLong)){
-                        this.setAdjustedTimestamp(lStartLong);
-                        this.setAdjustmenttype("Lunch Start");
-                    } else
+            GregorianCalendar lStopCal = (GregorianCalendar) originalTSCal.clone();
+            lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop(day).getHour());
+            lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop(day).getMinute());
+            Long lStopLong = lStopCal.getTimeInMillis();
 
-                    //NON-SPECIAL CLOCK-OUT CASES
-                    //If clocked-out time is not on an even Interval, round it to nearest Interval
-                    if (punchTime % sInterval != 0){
-                        if (this.getOriginaltimestamp() % sInterval < sInterval / 2){
-                            punchTime = Math.round((long)punchTime/(sInterval) ) * (sInterval);
-                        } else {
-                            punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
+            //Convert time ranges to Longs for comparisons
+            long sInterval = s.getInterval(day) * 60000;
+            long sGrace = s.getGracePeriod(day) * 60000;
+            long sDock = s.getDock(day) * 60000;
+
+            //Check if the punch was during a weekend
+            if ((originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SATURDAY) && (originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SUNDAY)){
+                switch (this.getPunchtypeid()){
+                    case 0:
+                        //SHIFT CLOCK-OUTS
+                        //If clocked-out late && within interval, snap to scheduled clock-out time
+                        if ((punchTime >= sStopLong)
+                        && (punchTime <= sStopLong + sInterval)){
+                            this.setAdjustedTimestamp(sStopLong);
+                            this.setAdjustmenttype("Shift Stop");
+                        } else
+
+                        //If clocked-out early, but within grace period
+                        if ((punchTime <= sStopLong)
+                        && (punchTime >= sStopLong - sGrace)){
+                            this.setAdjustedTimestamp(sStopLong);
+                            this.setAdjustmenttype("Shift Stop");
+                        } else
+
+                        //If clocked-out early, but outside of grace and within dock
+                        if ((punchTime <= sStopLong - sGrace)
+                        && (punchTime >= sStopLong - sDock)){
+                            this.setAdjustedTimestamp(sStopLong - sDock);
+                            this.setAdjustmenttype("Shift Dock");
+                        } else
+
+                        //LUNCH CLOCK-OUT
+                        //If clocked-out late during lunch break, snap to scheduled lunch-start time
+                        if ((punchTime >= lStartLong)
+                        && (punchTime <= lStopLong)){
+                            this.setAdjustedTimestamp(lStartLong);
+                            this.setAdjustmenttype("Lunch Start");
+                        } else
+
+                        //NON-SPECIAL CLOCK-OUT CASES
+                        //If clocked-out time is not on an even Interval, round it to nearest Interval
+                        if (punchTime % sInterval != 0){
+                            if (this.getOriginaltimestamp() % sInterval < sInterval / 2){
+                                punchTime = Math.round((long)punchTime/(sInterval) ) * (sInterval);
+                            } else {
+                                punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
+                            }
+                            this.setAdjustedTimestamp(punchTime);
+                            this.setAdjustmenttype("Interval Round");
+                        } else
+                        //Make no changes
+                        {
+                            this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
+                            this.setAdjustmenttype("None");
                         }
-                        this.setAdjustedTimestamp(punchTime);
-                        this.setAdjustmenttype("Interval Round");
-                    } else 
-                    //Make no changes
-                    {
-                        this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
-                        this.setAdjustmenttype("None");
-                    }
-                    break;
+                        break;
 
-                case 1:
-                    //SHIFT CLOCK-INS
-                    //If clocked-in early && within interval, snap to scheduled clock-in time
-                    if ((punchTime <= sStartLong)
-                    && (punchTime >= sStartLong - sInterval)){
-                        this.setAdjustedTimestamp(sStartLong);
-                        this.setAdjustmenttype("Shift Start");
-                    } else
+                    case 1:
+                        //SHIFT CLOCK-INS
+                        //If clocked-in early && within interval, snap to scheduled clock-in time
+                        if ((punchTime <= sStartLong)
+                        && (punchTime >= sStartLong - sInterval)){
+                            this.setAdjustedTimestamp(sStartLong);
+                            this.setAdjustmenttype("Shift Start");
+                        } else
 
-                    //If clocked-in late, but within grace period
-                    if ((punchTime >= sStartLong)
-                    && (punchTime <= sStartLong + sGrace)){
-                        this.setAdjustedTimestamp(sStartLong);
-                        this.setAdjustmenttype("Shift Start");
-                    } else
+                        //If clocked-in late, but within grace period
+                        if ((punchTime >= sStartLong)
+                        && (punchTime <= sStartLong + sGrace)){
+                            this.setAdjustedTimestamp(sStartLong);
+                            this.setAdjustmenttype("Shift Start");
+                        } else
 
-                    //If clocked-in late, but outside of grace and within dock
-                    if ((punchTime >= sStartLong + sGrace) 
-                    && (punchTime <= sStartLong + sDock)){
-                        this.setAdjustedTimestamp(sStartLong + sDock);
-                        this.setAdjustmenttype("Shift Dock");
-                    } else
+                        //If clocked-in late, but outside of grace and within dock
+                        if ((punchTime >= sStartLong + sGrace)
+                        && (punchTime <= sStartLong + sDock)){
+                            this.setAdjustedTimestamp(sStartLong + sDock);
+                            this.setAdjustmenttype("Shift Dock");
+                        } else
 
-                    //LUNCH CLOCK-INS
-                    //If clocked-in early, snap to scheduled lunch-stop time
-                    if ((punchTime <= lStopLong)
-                    && (punchTime >= lStartLong)){
-                        this.setAdjustedTimestamp(lStopLong);
-                        this.setAdjustmenttype("Lunch Stop");
-                    } else
+                        //LUNCH CLOCK-INS
+                        //If clocked-in early, snap to scheduled lunch-stop time
+                        if ((punchTime <= lStopLong)
+                        && (punchTime >= lStartLong)){
+                            this.setAdjustedTimestamp(lStopLong);
+                            this.setAdjustmenttype("Lunch Stop");
+                        } else
 
-                    //NON-SPECIAL CLOCK-IN CASES
-                    //If clocked-in time is not on an even Interval, round it to nearest Interval
-                    if (punchTime % sInterval != 0){
-                        if (this.getOriginaltimestamp() % sInterval < sInterval / 2){
-                            punchTime = Math.round((long)punchTime/(sInterval) ) * (sInterval);
-                        } else {
-                            punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
+                        //NON-SPECIAL CLOCK-IN CASES
+                        //If clocked-in time is not on an even Interval, round it to nearest Interval
+                        if (punchTime % sInterval != 0){
+                            if (this.getOriginaltimestamp() % sInterval < sInterval / 2){
+                                punchTime = Math.round((long)punchTime/(sInterval) ) * (sInterval);
+                            } else {
+                                punchTime = Math.round((long)(punchTime + sInterval)/(sInterval) ) * (sInterval);
+                            }
+                            this.setAdjustedTimestamp(punchTime);
+                            this.setAdjustmenttype("Interval Round");
+                        } else
+                        //Make no changes
+                        {
+                            this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
+                            this.setAdjustmenttype("None");
                         }
-                        this.setAdjustedTimestamp(punchTime);
-                        this.setAdjustmenttype("Interval Round");
-                    } else 
-                    //Make no changes
-                    {
-                        this.setAdjustedTimestamp(punchTime); //Needed to clear Seconds field
-                        this.setAdjustmenttype("None");
-                    }
-                    break;
+                        break;
+                }
             }
 
-        } else { //If the day is on the weekend
+        }
+
+        else { //If the day is on the weekend
+            GregorianCalendar originalTSCal = new GregorianCalendar();
+            originalTSCal.setTimeInMillis(this.getOriginaltimestamp());
+            originalTSCal.clear(GregorianCalendar.SECOND);
+            Long punchTime = originalTSCal.getTimeInMillis();
+
+            GregorianCalendar sStartCal = (GregorianCalendar) originalTSCal.clone();
+            sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart().getHour());
+            sStartCal.set(GregorianCalendar.MINUTE, s.getStart().getMinute());
+            Long sStartLong = sStartCal.getTimeInMillis();
+
+            GregorianCalendar sStopCal = (GregorianCalendar) originalTSCal.clone();
+            sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop().getHour());
+            sStopCal.set(GregorianCalendar.MINUTE, s.getStop().getMinute());
+            Long sStopLong = sStopCal.getTimeInMillis();
+
+            GregorianCalendar lStartCal = (GregorianCalendar) originalTSCal.clone();
+            lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart().getHour());
+            lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart().getMinute());
+            Long lStartLong = lStartCal.getTimeInMillis();
+
+            GregorianCalendar lStopCal = (GregorianCalendar) originalTSCal.clone();
+            lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop().getHour());
+            lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop().getMinute());
+            Long lStopLong = lStopCal.getTimeInMillis();
+
+            //Convert time ranges to Longs for comparisons
+            long sInterval = s.getInterval() * 60000;
+            long sGrace = s.getGracePeriod() * 60000;
+            long sDock = s.getDock() * 60000;
+
             //If clocked-in time is not on an even Interval, round it to nearest Interval
             if (punchTime % sInterval != 0){
                 if (this.getOriginaltimestamp() % sInterval < sInterval / 2){

@@ -17,12 +17,6 @@ public class Shift {
         this.description = description;
     }
 
-    //Old constructor
-//    public Shift(String description, DailySchedule schedule) {
-//        this.description = description;
-//        this.defaultSchedule = schedule;
-//    }
-
     public Shift(String description, DailySchedule schedule) {
         this.description = description;
         this.defaultSchedule = schedule;
@@ -33,11 +27,8 @@ public class Shift {
         scheduleMap.put(Calendar.WEDNESDAY, schedule);
         scheduleMap.put(Calendar.THURSDAY, schedule);
         scheduleMap.put(Calendar.FRIDAY, schedule);
-
-        //TODO: how to fix null pointer?
-//        scheduleMap.put(Calendar.SATURDAY, schedule);
-//        scheduleMap.put(Calendar.SUNDAY, schedule);
     }
+
 
     private int shiftDuration (LocalTime start, LocalTime stop) {
         LocalTime l1 = LocalTime.parse(start.toString());
@@ -121,7 +112,6 @@ public class Shift {
         scheduleMap.get(day).setLunchStop(lunchStop);
     }
 
-    //TODO: need lower 2?
     public void setDefaultSchedule(DailySchedule schedule) {
         this.defaultSchedule = schedule;
     }
@@ -130,7 +120,6 @@ public class Shift {
         scheduleMap.put(day, schedule);
     }
 
-    //TODO: punches on day not in the map should return values from defaultSchedule. Where does that apply?
     // Getter methods
     public String getDescription () {return description;}
 
@@ -214,7 +203,6 @@ public class Shift {
         return scheduleMap.get(day).getLunchStop();
     }
 
-    //TODO: need lower 2?
     public DailySchedule getDefaultSchedule() {
         return defaultSchedule;
     }

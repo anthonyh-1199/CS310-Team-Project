@@ -18,13 +18,22 @@ public class TASLogic {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(dailypunchlist.get(0).getOriginaltimestamp());
         day = cal.get(Calendar.DAY_OF_WEEK);
+        boolean isWeekend = (day == Calendar.SATURDAY) || (day == Calendar.SUNDAY);
 
         for (Punch punch : dailypunchlist) {
             switch (punch.getPunchtypeid()) {
                 case 0:
                     int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
-                    if (minutes > shift.getLunchDeduct(day)) {
-                        minutes -= shift.getLunchDuration(day);
+                    if (!isWeekend){
+                        if (minutes > shift.getLunchDeduct(day)) {
+                            minutes -= shift.getLunchDuration(day);
+                        }
+                    }
+
+                    else {
+                        if (minutes > shift.getLunchDeduct()) {
+                            minutes -= shift.getLunchDuration();
+                        }
                     }
                     total += minutes;
                     break;
