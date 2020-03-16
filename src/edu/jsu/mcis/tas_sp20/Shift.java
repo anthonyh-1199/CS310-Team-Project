@@ -7,8 +7,8 @@ import java.util.HashMap;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 public class Shift {
-    String description;
-    DailySchedule defaultSchedule;
+    private String description;
+    private DailySchedule defaultSchedule;
     private HashMap<Integer, DailySchedule> scheduleMap;
 
     public Shift (int ID, String description, LocalTime start, LocalTime stop, int interval, int gracePeriod, int dock,
@@ -17,6 +17,7 @@ public class Shift {
         this.description = description;
     }
 
+    //Old constructor
 //    public Shift(String description, DailySchedule schedule) {
 //        this.description = description;
 //        this.defaultSchedule = schedule;
@@ -32,6 +33,10 @@ public class Shift {
         scheduleMap.put(Calendar.WEDNESDAY, schedule);
         scheduleMap.put(Calendar.THURSDAY, schedule);
         scheduleMap.put(Calendar.FRIDAY, schedule);
+
+        //TODO: how to fix null pointer?
+//        scheduleMap.put(Calendar.SATURDAY, schedule);
+//        scheduleMap.put(Calendar.SUNDAY, schedule);
     }
 
     private int shiftDuration (LocalTime start, LocalTime stop) {

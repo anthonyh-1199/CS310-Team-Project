@@ -1,5 +1,6 @@
 package edu.jsu.mcis.tas_sp20;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,35 +52,39 @@ class Punch {
     
     public void adjust(Shift s){
         //Convert shift times to Gregorian Calenders and Longs
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(this.originaltimestamp);
+        int day = cal.get(Calendar.DAY_OF_WEEK);
+
         GregorianCalendar originalTSCal = new GregorianCalendar();
             originalTSCal.setTimeInMillis(this.getOriginaltimestamp());
             originalTSCal.clear(GregorianCalendar.SECOND);
         Long punchTime = originalTSCal.getTimeInMillis();
 
         GregorianCalendar sStartCal = (GregorianCalendar) originalTSCal.clone();
-        sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart().getHour());
-        sStartCal.set(GregorianCalendar.MINUTE, s.getStart().getMinute());
+        sStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStart(day).getHour());
+        sStartCal.set(GregorianCalendar.MINUTE, s.getStart(day).getMinute());
         Long sStartLong = sStartCal.getTimeInMillis();
         
         GregorianCalendar sStopCal = (GregorianCalendar) originalTSCal.clone();
-        sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop().getHour());
-        sStopCal.set(GregorianCalendar.MINUTE, s.getStop().getMinute());
+        sStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getStop(day).getHour());
+        sStopCal.set(GregorianCalendar.MINUTE, s.getStop(day).getMinute());
         Long sStopLong = sStopCal.getTimeInMillis();
         
         GregorianCalendar lStartCal = (GregorianCalendar) originalTSCal.clone();
-        lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart().getHour());
-        lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart().getMinute());
+        lStartCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStart(day).getHour());
+        lStartCal.set(GregorianCalendar.MINUTE, s.getLunchStart(day).getMinute());
         Long lStartLong = lStartCal.getTimeInMillis();
         
         GregorianCalendar lStopCal = (GregorianCalendar) originalTSCal.clone();
-        lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop().getHour());
-        lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop().getMinute());
+        lStopCal.set(GregorianCalendar.HOUR_OF_DAY, s.getLunchStop(day).getHour());
+        lStopCal.set(GregorianCalendar.MINUTE, s.getLunchStop(day).getMinute());
         Long lStopLong = lStopCal.getTimeInMillis();
         
         //Convert time ranges to Longs for comparisons
-        long sInterval = s.getInterval() * 60000;
-        long sGrace = s.getGracePeriod() * 60000;
-        long sDock = s.getDock() * 60000;
+        long sInterval = s.getInterval(day) * 60000;
+        long sGrace = s.getGracePeriod(day) * 60000;
+        long sDock = s.getDock(day) * 60000;
         
         //Check if the punch was during a weekend
         if ((originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SATURDAY) && (originalTSCal.get(GregorianCalendar.DAY_OF_WEEK) != GregorianCalendar.SUNDAY)){

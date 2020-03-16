@@ -3,20 +3,26 @@ package edu.jsu.mcis.tas_sp20;
 import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class TASLogic {
 
     public static int calculateTotalMinutes(ArrayList<Punch> dailypunchlist, Shift shift){
         int total = 0;
+        int day;
         long inTime = 0;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(dailypunchlist.get(0).getOriginaltimestamp());
+        day = cal.get(Calendar.DAY_OF_WEEK);
 
         for (Punch punch : dailypunchlist) {
             switch (punch.getPunchtypeid()) {
                 case 0:
                     int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
-                    if (minutes > shift.getLunchDeduct()) {
-                        minutes -= shift.getLunchDuration();
+                    if (minutes > shift.getLunchDeduct(day)) {
+                        minutes -= shift.getLunchDuration(day);
                     }
                     total += minutes;
                     break;
