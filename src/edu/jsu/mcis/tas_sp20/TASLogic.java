@@ -60,28 +60,28 @@ public class TASLogic {
         return percentage;
     }
 
-//    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test
-//        HashMap<String, String> map;
-//        ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
-//
-//        for (Punch punch : punchList) {
-//            map = new HashMap<>();
-//            map.put("id", String.valueOf(punch.getId()));
-//            map.put("terminalid", String.valueOf(punch.getTerminalid()));
-//            map.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
-//            map.put("badgeid", punch.getBadgeid());
-//            map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
-//            map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
-//            map.put("adjustmenttype", punch.getAdjustmenttype());
-//            mapList.add(map);
-//        }
-//
-//        map = new HashMap<>();
-//        map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
-//        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)));
-//        mapList.add(map);
-//
-//
-//        return JSONValue.toJSONString(mapList);
-//    }
+    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test
+        HashMap<String, String> map;
+        ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
+
+        for (Punch punch : punchList) {
+            map = new HashMap<>();
+            map.put("id", String.valueOf(punch.getId()));
+            map.put("terminalid", String.valueOf(punch.getTerminalid()));
+            map.put("punchtypeid", String.valueOf(punch.getPunchtypeid()));
+            map.put("badgeid", punch.getBadgeid());
+            map.put("originaltimestamp", String.valueOf(punch.getOriginaltimestamp()));
+            map.put("adjustedtimestamp", String.valueOf(punch.getAdjustedtimestamp()));
+            map.put("punchdata", punch.getAdjustmenttype());
+            mapList.add(map);
+        }
+
+        map = new HashMap<>();
+        map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
+        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)) + '%');
+        mapList.add(map);
+
+
+        return JSONValue.toJSONString(mapList);
+    }
 }
