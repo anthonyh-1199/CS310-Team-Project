@@ -206,7 +206,7 @@ public class TASDatabase {
             Long endTimestamp;
             String badgeid;
 
-            //Get the default value to return if none is found
+            //Get the default value to return if no override is found
             shift = getShift(badge);
 
             //Loop through scheduleoverride and check for any applicable overrides
@@ -217,7 +217,9 @@ public class TASDatabase {
 
                 if ((timestamp >= startTimestamp) && (timestamp <= endTimestamp)
                 && ((badgeid == null) || (badgeid.equals( badge.getId())))){
-                    shift = getShift(resultSet.getInt("dailyscheduleid"));
+                    Shift overrideShift = null;
+                    overrideShift = getShift(resultSet.getInt("dailyscheduleid"));
+                    shift.setSchedule(overrideShift.getDefaultSchedule(), resultSet.getInt("day"));
                 }
             }
         } catch (Exception e) {
