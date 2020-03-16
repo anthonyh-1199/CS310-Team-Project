@@ -50,6 +50,20 @@ public class TASLogic {
         return JSONValue.toJSONString(mapList);
     }
 
+    // TODO: Find how to get arrayList from getPayPeriodPunchList
+    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
+        double minWorked;
+        double percentage;
+
+
+
+        for (Punch punch : punchlist){
+            calculateTotalMinutes(punchlist, s);
+        }
+
+        return 0;
+    }
+
 //    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test
 //        HashMap<String, String> map;
 //        ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
