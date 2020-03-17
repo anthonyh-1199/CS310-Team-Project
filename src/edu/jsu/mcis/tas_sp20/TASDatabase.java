@@ -201,25 +201,29 @@ public class TASDatabase {
 
             pst.execute();
             resultSet = pst.getResultSet();
-            resultSet.first();
             Long startTimestamp;
             Long endTimestamp;
             String badgeid;
 
             //Get the default value to return if no override is found
             shift = getShift(badge);
-
+            
             //Loop through scheduleoverride and check for any applicable overrides
             while (resultSet.next()){
                 startTimestamp = resultSet.getTimestamp("start").getTime();
-                endTimestamp = resultSet.getTimestamp("start").getTime();
+                if (resultSet.getTimestamp("end") != null){
+                    endTimestamp = resultSet.getTimestamp("end").getTime();
+                } else {
+                    endTimestamp = null;
+                }
                 badgeid = resultSet.getString("badgeid");
 
-                if ((timestamp >= startTimestamp) && (timestamp <= endTimestamp)
-                && ((badgeid == null) || (badgeid.equals( badge.getId())))){
-                    Shift overrideShift = null;
-                    overrideShift = getShift(resultSet.getInt("dailyscheduleid"));
-                    shift.setSchedule(overrideShift.getDefaultSchedule(), resultSet.getInt("day"));
+                if (timestamp >= startTimestamp && ((timestamp <= endTimestamp) || (endTimestamp == null))){
+                    if ((badgeid == null) || (badgeid.equals( badge.getId() ))){
+                        DailySchedule schedule = null;
+                        schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
+                        shift.setSchedule(schedule, resultSet.getInt("day"));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -227,6 +231,45 @@ public class TASDatabase {
         }
 
         return shift;
+    }
+    
+    public DailySchedule getDailySchedule(int ID) {
+        DailySchedule schedule = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+            query = "SELECT * FROM dailyschedule WHERE id=?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, ID);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+            java.sql.Time temp;
+
+            int ShiftID = resultSet.getInt("id");
+            temp = resultSet.getTime("start");
+            LocalTime start = temp.toLocalTime();
+            temp = resultSet.getTime("stop");
+            LocalTime stop = temp.toLocalTime();
+            int interval = resultSet.getInt("interval");
+            int gracePeriod = resultSet.getInt("graceperiod");
+            int dock = resultSet.getInt("dock");
+            temp = resultSet.getTime("lunchstart");
+            LocalTime lunchStart = temp.toLocalTime();
+            temp = resultSet.getTime("lunchstop");
+            LocalTime lunchStop = temp.toLocalTime();
+            int lunchDeduct = resultSet.getInt("lunchdeduct");
+
+            schedule = new DailySchedule(ShiftID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return schedule;
     }
 
     public int insertPunch(Punch p) {
