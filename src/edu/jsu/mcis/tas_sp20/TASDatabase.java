@@ -315,10 +315,6 @@ public class TASDatabase {
         String timeLike = timestamp.toString().substring(0, 11);
         timeLike += "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
-        
-        Timestamp nextDay = new Timestamp(ts + this.DAY_IN_MILLIS);
-        String timeLikeNext = nextDay.toString().substring(0, 11);
-        timeLikeNext += "%";
 
         try {
             PreparedStatement pst;
@@ -346,10 +342,14 @@ public class TASDatabase {
                 }
                 
                 if(!isPaired){
+                timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
+                timeLike = timestamp.toString().substring(0, 11);
+                timeLike += "%";
+        
                 query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setString(1, badge.getId());
-                pst.setString(2, timeLikeNext);
+                pst.setString(2, timeLike);
                 
                 pst.execute();
                 resultSet = pst.getResultSet();
