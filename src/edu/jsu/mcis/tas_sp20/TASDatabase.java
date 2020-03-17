@@ -204,7 +204,7 @@ public class TASDatabase {
             Long startTimestamp;
             Long endTimestamp;
             String badgeid;
-
+            
             //Get the default value to return if no override is found
             shift = getShift(badge);
             
@@ -363,25 +363,35 @@ public class TASDatabase {
                     dailyPunchList.add(temp);
                 }
                 
-                //Sort dailyPunchList
-                int count = 1;
-                while(dailyPunchList.size() > 0){
-                    for(int i = 0; i < dailyPunchList.size(); i++){
-                        System.out.println(dailyPunchList.size());
-                        if(dailyPunchList.get(i).getPunchtypeid() == count){
-                            sortedDailyPunchList.add(dailyPunchList.get(i));
-                            dailyPunchList.remove(i);
-                        }
+                //Sort dailyPunchList if necessary
+                if (dailyPunchList.size() > 0){
+                    if(dailyPunchList.get(0).getPunchtypeid() == 0){
+                        sortPunchList(dailyPunchList, sortedDailyPunchList);
+                    } else {
+                        sortedDailyPunchList = dailyPunchList;
                     }
-                    
-                    count = (count + 1) % 2;
                 }
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return sortedDailyPunchList;
+    }
+    
+    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {
+        int count = 1;
+        while(punchlist.size() > 0){
+            for(int i = 0; i < punchlist.size(); i++){
+                if(punchlist.get(i).getPunchtypeid() == count){
+                    sortedpunchlist.add(punchlist.get(i));
+                    punchlist.remove(i);
+                }
+            }
+
+            count = (count + 1) % 2;
+        }
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
