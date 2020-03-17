@@ -315,6 +315,8 @@ public class TASDatabase {
         String timeLike = timestamp.toString().substring(0, 11);
         timeLike += "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
+        ArrayList<Punch> sortedDailyPunchList = new ArrayList<>();
+
 
         try {
             PreparedStatement pst;
@@ -342,30 +344,44 @@ public class TASDatabase {
                 }
                 
                 if(!isPaired){
-                timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
-                timeLike = timestamp.toString().substring(0, 11);
-                timeLike += "%";
-        
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
-                pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                pst.setString(1, badge.getId());
-                pst.setString(2, timeLike);
-                
-                pst.execute();
-                resultSet = pst.getResultSet();
-                resultSet.first();
-                
-                int punchId = resultSet.getInt("id");
+                    timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
+                    timeLike = timestamp.toString().substring(0, 11);
+                    timeLike += "%";
 
-                Punch temp = this.getPunch(punchId);
-                dailyPunchList.add(temp);     
+                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                    pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    pst.setString(1, badge.getId());
+                    pst.setString(2, timeLike);
+
+                    pst.execute();
+                    resultSet = pst.getResultSet();
+                    resultSet.first();
+                    
+                    int punchId = resultSet.getInt("id");
+
+                    Punch temp = this.getPunch(punchId);
+                    dailyPunchList.add(temp);
+                }
+                
+                //Sort dailyPunchList
+                int count = 1;
+                while(dailyPunchList.size() > 0){
+                    for(int i = 0; i < dailyPunchList.size(); i++){
+                        System.out.println(dailyPunchList.size());
+                        if(dailyPunchList.get(i).getPunchtypeid() == count){
+                            sortedDailyPunchList.add(dailyPunchList.get(i));
+                            dailyPunchList.remove(i);
+                        }
+                    }
+                    
+                    count = (count + 1) % 2;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return dailyPunchList;
+        return sortedDailyPunchList;
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
