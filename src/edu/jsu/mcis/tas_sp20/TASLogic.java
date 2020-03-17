@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.lang.Math;
+import java.text.DecimalFormat;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 public class TASLogic {
 
@@ -17,13 +20,22 @@ public class TASLogic {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(dailypunchlist.get(0).getOriginaltimestamp());
         day = cal.get(Calendar.DAY_OF_WEEK);
+        boolean isWeekend = (day == Calendar.SATURDAY) || (day == Calendar.SUNDAY);
 
         for (Punch punch : dailypunchlist) {
             switch (punch.getPunchtypeid()) {
                 case 0:
                     int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
-                    if (minutes > shift.getLunchDeduct(day)) {
-                        minutes -= shift.getLunchDuration(day);
+                    if (!isWeekend){
+                        if (minutes > shift.getLunchDeduct(day)) {
+                            minutes -= shift.getLunchDuration(day);
+                        }
+                    }
+
+                    else {
+                        if (minutes > shift.getLunchDeduct()) {
+                            minutes -= shift.getLunchDuration();
+                        }
                     }
                     total += minutes;
                     break;
@@ -59,10 +71,23 @@ public class TASLogic {
 
     // TODO: Find how to get arrayList from getPayPeriodPunchList
     public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
-        double minWorked = calculateTotalMinutes(punchlist, s);
-        double minScheduled = 2400.0;
-        double percentage = Math.round((1 - minWorked / minScheduled) * 10000);
+        int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+            Calendar.THURSDAY, Calendar.FRIDAY};
+        double minWorked, minScheduled = 0, percentage;
+        
+        minWorked = calculateTotalMinutes(punchlist, s);
+        
+        for(int day : days){
+            LocalTime start = s.getStart(day);
+            LocalTime stop = s.getStop(day);
+            minScheduled += start.until(stop, ChronoUnit.MINUTES);
+            
+            minScheduled -= s.getLunchDuration(day);
+        }
+        
+        percentage = Math.round((1 - (minWorked / minScheduled)) * 10000);
         percentage = percentage / 100;
+        
         return percentage;
     }
 
@@ -84,7 +109,8 @@ public class TASLogic {
 
         map = new HashMap<>();
         map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
-        map.put("absenteeism", String.valueOf(calculateAbsenteeism(punchList, shift)) + '%');
+        map.put("absenteeism", String.valueOf((new DecimalFormat("0.00")).
+                format(calculateAbsenteeism(punchList, shift)) + '%'));
         mapList.add(map);
 
 
