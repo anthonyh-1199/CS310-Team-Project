@@ -218,7 +218,7 @@ public class TASDatabase {
                 }
                 badgeid = resultSet.getString("badgeid");
 
-                if (timestamp >= startTimestamp && ((timestamp <= endTimestamp) || (endTimestamp == null))){
+                if (timestamp >= startTimestamp && ((endTimestamp == null) || (timestamp <= endTimestamp))){
                     if ((badgeid == null) || (badgeid.equals( badge.getId() ))){
                         DailySchedule schedule = null;
                         schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
@@ -229,7 +229,6 @@ public class TASDatabase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return shift;
     }
     
