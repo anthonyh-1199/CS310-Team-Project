@@ -84,10 +84,17 @@ public class TASLogic {
             
             minScheduled -= s.getLunchDuration(day);
         }
-        
-        percentage = Math.round((1 - (minWorked / minScheduled)) * 10000);
+
+        percentage = (1 - (minWorked / minScheduled)) * 10000;
+        if (percentage < 0) {
+            percentage = -(Math.round(Math.abs(percentage * 10)));
+            percentage /= 10;
+        }
+        else {
+            percentage = Math.round(percentage);
+        }
+
         percentage = percentage / 100;
-        
         return percentage;
     }
 
