@@ -204,7 +204,7 @@ public class TASDatabase {
             Long startTimestamp;
             Long endTimestamp;
             String badgeid;
-
+            
             //Get the default value to return if no override is found
             shift = getShift(badge);
             
@@ -218,7 +218,7 @@ public class TASDatabase {
                 }
                 badgeid = resultSet.getString("badgeid");
 
-                if (timestamp >= startTimestamp && ((timestamp <= endTimestamp) || (endTimestamp == null))){
+                if (timestamp >= startTimestamp && ((endTimestamp == null) || (timestamp <= endTimestamp))){
                     if ((badgeid == null) || (badgeid.equals( badge.getId() ))){
                         DailySchedule schedule = null;
                         schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
@@ -229,7 +229,6 @@ public class TASDatabase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return shift;
     }
     
@@ -316,10 +315,8 @@ public class TASDatabase {
         String timeLike = timestamp.toString().substring(0, 11);
         timeLike += "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
-        
-        Timestamp nextDay = new Timestamp(ts + this.DAY_IN_MILLIS);
-        String timeLikeNext = nextDay.toString().substring(0, 11);
-        timeLikeNext += "%";
+        ArrayList<Punch> sortedDailyPunchList = new ArrayList<>();
+
 
         try {
             PreparedStatement pst;
@@ -347,26 +344,54 @@ public class TASDatabase {
                 }
                 
                 if(!isPaired){
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
-                pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-                pst.setString(1, badge.getId());
-                pst.setString(2, timeLikeNext);
-                
-                pst.execute();
-                resultSet = pst.getResultSet();
-                resultSet.first();
-                
-                int punchId = resultSet.getInt("id");
+                    timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
+                    timeLike = timestamp.toString().substring(0, 11);
+                    timeLike += "%";
 
-                Punch temp = this.getPunch(punchId);
-                dailyPunchList.add(temp);     
+                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                    pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                    pst.setString(1, badge.getId());
+                    pst.setString(2, timeLike);
+
+                    pst.execute();
+                    resultSet = pst.getResultSet();
+                    resultSet.first();
+                    
+                    int punchId = resultSet.getInt("id");
+
+                    Punch temp = this.getPunch(punchId);
+                    dailyPunchList.add(temp);
                 }
+                
+                //Sort dailyPunchList if necessary
+                if (dailyPunchList.size() > 0){
+                    if(dailyPunchList.get(0).getPunchtypeid() == 0){
+                        sortPunchList(dailyPunchList, sortedDailyPunchList);
+                    } else {
+                        sortedDailyPunchList = dailyPunchList;
+                    }
+                }
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return dailyPunchList;
+        return sortedDailyPunchList;
+    }
+    
+    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {
+        int count = 1;
+        while(punchlist.size() > 0){
+            for(int i = 0; i < punchlist.size(); i++){
+                if(punchlist.get(i).getPunchtypeid() == count){
+                    sortedpunchlist.add(punchlist.get(i));
+                    punchlist.remove(i);
+                }
+            }
+
+            count = (count + 1) % 2;
+        }
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
