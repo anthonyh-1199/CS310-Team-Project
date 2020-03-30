@@ -12,7 +12,7 @@ public class TASDatabase {
 
     public final int DAY_IN_MILLIS = 86400000;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {    //TODO: remove
     }
 
     public TASDatabase(){
@@ -81,7 +81,7 @@ public class TASDatabase {
             resultSet.first();
 
             Badge badge = new Badge(resultSet.getString("id"), resultSet.getString("description"));
-
+            //TODO: remove empty space?
             punch = new Punch(ID, terminalID, badge, origTimeStamp, punchTypeID);
 
         } catch (Exception e) {
@@ -104,7 +104,7 @@ public class TASDatabase {
             pst.execute();
 
             resultSet = pst.getResultSet();
-            resultSet.first();
+            resultSet.first();  //TODO: new line after?
             badge = new Badge(ID, resultSet.getString("description"));
 
         } catch (Exception e) {
@@ -131,7 +131,7 @@ public class TASDatabase {
             java.sql.Time temp;
 
             int ShiftID = resultSet.getInt("id");
-            temp = resultSet.getTime("start");
+            temp = resultSet.getTime("start");  //TODO: can these lines be combined?
             LocalTime start = temp.toLocalTime();
             temp = resultSet.getTime("stop");
             LocalTime stop = temp.toLocalTime();
@@ -180,7 +180,7 @@ public class TASDatabase {
             resultSet.first();
 
             int shiftID = resultSet.getInt("shiftid");
-
+            //TODO: remove space?
             shift = getShift(shiftID);
         } catch (Exception e) {
             e.printStackTrace();
@@ -220,7 +220,7 @@ public class TASDatabase {
 
                 if (timestamp >= startTimestamp && ((endTimestamp == null) || (timestamp <= endTimestamp))){
                     if ((badgeid == null) || (badgeid.equals( badge.getId() ))){
-                        DailySchedule schedule = null;
+                        DailySchedule schedule = null;  //TODO: can these 2 lines be combined?
                         schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
                         shift.setSchedule(schedule, resultSet.getInt("day"));
                     }
@@ -232,7 +232,7 @@ public class TASDatabase {
         return shift;
     }
     
-    public DailySchedule getDailySchedule(int ID) {
+    public DailySchedule getDailySchedule(int ID) { //TODO: make private?
         DailySchedule schedule = null;
         String query;
         PreparedStatement pst;
@@ -249,7 +249,7 @@ public class TASDatabase {
             java.sql.Time temp;
 
             int ShiftID = resultSet.getInt("id");
-            temp = resultSet.getTime("start");
+            temp = resultSet.getTime("start");  //TODO: see above - can combine?
             LocalTime start = temp.toLocalTime();
             temp = resultSet.getTime("stop");
             LocalTime stop = temp.toLocalTime();
@@ -275,7 +275,7 @@ public class TASDatabase {
         GregorianCalendar ots = new GregorianCalendar();
         ots.setTimeInMillis(p.getOriginaltimestamp());
         String badgeID = p.getBadge().getId();
-        int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();
+        int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();   //TODO: split?
 
         try {
             PreparedStatement pst;
@@ -287,17 +287,17 @@ public class TASDatabase {
                 query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (?, ?, ?, ?)";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setInt(1, terminalID);
-                pst.setString(2, badgeID.toString());
+                pst.setString(2, badgeID.toString());   //TODO: remove toString - is already a String
                 pst.setString(3, (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(ots.getTime()));
                 pst.setInt(4, punchTypeID);
 
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
                 resultSet.first();
-                if (resultSet.getInt(1) > 0) {
+                if (resultSet.getInt(1) > 0) {  //TODO: change constants to collumn headers
                     return resultSet.getInt(1);
                 } else {
-                    return -1;
+                    return -1;  //TODO: duplicate return value?
                 }
 
 
@@ -326,7 +326,7 @@ public class TASDatabase {
 
 
             if (conn.isValid(0)){
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";   //TODO: can you add AS in order to skip the sorting?
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setString(1, badge.getId());
                 pst.setString(2, timeLike);
@@ -336,7 +336,7 @@ public class TASDatabase {
                 
                 while(resultSet.next()){
                     int punchId = resultSet.getInt("id");
-                    
+                    //TODO: remove extra space?
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                     
@@ -380,8 +380,8 @@ public class TASDatabase {
         return sortedDailyPunchList;
     }
     
-    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {
-        int count = 1;
+    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {   //TODO: make private    //TODO: return a sorted punch list instead of passing by reference? or pass a single arrayList and sort it?
+        int count = 1;  //TODO: rename
         while(punchlist.size() > 0){
             for(int i = 0; i < punchlist.size(); i++){
                 if(punchlist.get(i).getPunchtypeid() == count){
@@ -406,7 +406,7 @@ public class TASDatabase {
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
-            ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
+            ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));    //TODO: Can't we just return this arrayList instead of copying it?
 
             for(Punch p: temp){
                 returnArray.add(p);
@@ -424,7 +424,7 @@ public class TASDatabase {
         gc.set(Calendar.MINUTE, 0);
         gc.set(Calendar.SECOND, 0);
         gc.set(Calendar.MILLISECOND, 0);
-        long tsNew = gc.getTimeInMillis();
+        long tsNew = gc.getTimeInMillis();  //TODO: is this a different number than ts?
 
         Timestamp timestamp = new Timestamp(tsNew);
         Absenteeism returnAbsenteeism = null;

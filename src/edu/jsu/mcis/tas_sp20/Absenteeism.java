@@ -5,14 +5,14 @@ import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.text.DecimalFormat;
-
+//TODO: decide - to print or not to print?
 public class Absenteeism {
-    String id;
+    String id;  //TODO: all private
     long tsLong;
     double percentage;
     GregorianCalendar gc = new GregorianCalendar();
 
-    Absenteeism (String id, long tsLong, double percentage) {
+    Absenteeism (String id, long tsLong, double percentage) {   //TODO: public
         this.gc.setTimeInMillis(tsLong);
         this.gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
         this.gc.set(Calendar.HOUR, 0);

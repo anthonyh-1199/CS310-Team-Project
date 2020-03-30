@@ -70,7 +70,7 @@ public class TASLogic {
     }
 
     // TODO: Find how to get arrayList from getPayPeriodPunchList
-    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
+    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {    //TODO: move so that it doesn't seperate above and below methods, which are related
         int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
             Calendar.THURSDAY, Calendar.FRIDAY};
         double minWorked, minScheduled = 0, percentage;
@@ -82,11 +82,11 @@ public class TASLogic {
             LocalTime stop = s.getStop(day);
             minScheduled += start.until(stop, ChronoUnit.MINUTES);
             
-            minScheduled -= s.getLunchDuration(day);
+            minScheduled -= s.getLunchDuration(day);    //TODO: technically, shouldn't this only happen if the hours are above lunchDeduct? (see calculateTotalMinutes)
         }
 
         percentage = (1 - (minWorked / minScheduled)) * 10000;
-        if (percentage < 0) {
+        if (percentage < 0) {   //TODO: get the math whiz to tell us why we're idiots
             percentage = -(Math.round(Math.abs(percentage * 10)));
             percentage /= 10;
         }

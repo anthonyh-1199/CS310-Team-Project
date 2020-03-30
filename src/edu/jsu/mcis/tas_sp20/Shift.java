@@ -30,7 +30,7 @@ public class Shift {
     }
 
 
-    private int shiftDuration (LocalTime start, LocalTime stop) {
+    private int shiftDuration (LocalTime start, LocalTime stop) {   //TODO: remove?
         LocalTime l1 = LocalTime.parse(start.toString());
         LocalTime l2 = LocalTime.parse(stop.toString());
         long time = l1.until(l2, MINUTES);
