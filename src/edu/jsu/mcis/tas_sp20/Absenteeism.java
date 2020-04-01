@@ -3,22 +3,16 @@ package edu.jsu.mcis.tas_sp20;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.text.DecimalFormat;
-//TODO: decide - to print or not to print?
-public class Absenteeism {
-    String id;  //TODO: all private
-    long tsLong;
-    double percentage;
-    GregorianCalendar gc = new GregorianCalendar();
 
-    Absenteeism (String id, long tsLong, double percentage) {   //TODO: public
-        this.gc.setTimeInMillis(tsLong);
-        this.gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        this.gc.set(Calendar.HOUR, 0);
-        this.gc.set(Calendar.MINUTE, 0);
-        this.gc.set(Calendar.SECOND, 0);
-        this.gc.set(Calendar.MILLISECOND, 0);
+public class Absenteeism {
+    private String id;
+    private long tsLong;
+    private double percentage;
+    private GregorianCalendar gc = new GregorianCalendar();
+
+    public Absenteeism (String id, long tsLong, double percentage) {
+        this.gc = TASLogic.convertLongtoGC(tsLong);
         
         this.tsLong = gc.getTimeInMillis();
         this.id = id;
@@ -43,7 +37,7 @@ public class Absenteeism {
         String pString = (new DecimalFormat("0.00")).format(percentage);
         String s = "#" + id + " " + "(Pay Period Starting " +
                 new SimpleDateFormat("MM-dd-yyyy").format(this.gc.getTime()) +
-                "): " + pString + "%"; //TODO: CHANGE "TIME" TO DATE
+                "): " + pString + "%";
         return s;
     }
 }

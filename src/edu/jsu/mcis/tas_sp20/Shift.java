@@ -4,8 +4,6 @@ import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.HashMap;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 public class Shift {
     private String description;
     private DailySchedule defaultSchedule;
@@ -20,7 +18,7 @@ public class Shift {
     public Shift(String description, DailySchedule schedule) {
         this.description = description;
         this.defaultSchedule = schedule;
-        this.scheduleMap = new HashMap<Integer, DailySchedule>();
+        this.scheduleMap = new HashMap<>();
 
         scheduleMap.put(Calendar.MONDAY, schedule);
         scheduleMap.put(Calendar.TUESDAY, schedule);
@@ -29,16 +27,10 @@ public class Shift {
         scheduleMap.put(Calendar.FRIDAY, schedule);
     }
 
-
-    private int shiftDuration (LocalTime start, LocalTime stop) {   //TODO: remove?
-        LocalTime l1 = LocalTime.parse(start.toString());
-        LocalTime l2 = LocalTime.parse(stop.toString());
-        long time = l1.until(l2, MINUTES);
-        return (int) time;
-    }
-
     // Setter methods
-    public void setDescription (String description) {this.description = description;}
+    public void setDescription (String description) {
+        this.description = description;
+    }
 
     public void setID(int ID) {
         defaultSchedule.setID(ID);
@@ -121,7 +113,9 @@ public class Shift {
     }
 
     // Getter methods
-    public String getDescription () {return description;}
+    public String getDescription () {
+        return description;
+    }
 
     public int getID() {
         return defaultSchedule.getID();

@@ -9,6 +9,7 @@ import java.lang.Math;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.GregorianCalendar;
 
 public class TASLogic {
 
@@ -122,5 +123,17 @@ public class TASLogic {
 
 
         return JSONValue.toJSONString(mapList);
+    }
+    
+    public static GregorianCalendar convertLongtoGC(long l){
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.setTimeInMillis(l);
+        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
+        gc.set(Calendar.HOUR, 0);
+        gc.set(Calendar.MINUTE, 0);
+        gc.set(Calendar.SECOND, 0);
+        gc.set(Calendar.MILLISECOND, 0);
+        
+        return gc;
     }
 }

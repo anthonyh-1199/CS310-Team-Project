@@ -12,9 +12,6 @@ public class TASDatabase {
 
     public final int DAY_IN_MILLIS = 86400000;
 
-    public static void main(String[] args) {    //TODO: remove
-    }
-
     public TASDatabase(){
         try {
             String server = "jdbc:mysql://localhost/TAS";
@@ -41,8 +38,6 @@ public class TASDatabase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void close() {
@@ -81,7 +76,6 @@ public class TASDatabase {
             resultSet.first();
 
             Badge badge = new Badge(resultSet.getString("id"), resultSet.getString("description"));
-            //TODO: remove empty space?
             punch = new Punch(ID, terminalID, badge, origTimeStamp, punchTypeID);
 
         } catch (Exception e) {
@@ -104,7 +98,8 @@ public class TASDatabase {
             pst.execute();
 
             resultSet = pst.getResultSet();
-            resultSet.first();  //TODO: new line after?
+            resultSet.first();
+
             badge = new Badge(ID, resultSet.getString("description"));
 
         } catch (Exception e) {
@@ -121,29 +116,6 @@ public class TASDatabase {
         ResultSet resultSet;
 
         try {
-            query = "SELECT * FROM dailyschedule WHERE id=?";
-            pst = conn.prepareStatement(query);
-            pst.setInt(1, ID);
-
-            pst.execute();
-            resultSet = pst.getResultSet();
-            resultSet.first();
-            java.sql.Time temp;
-
-            int ShiftID = resultSet.getInt("id");
-            temp = resultSet.getTime("start");  //TODO: can these lines be combined?
-            LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime("stop");
-            LocalTime stop = temp.toLocalTime();
-            int interval = resultSet.getInt("interval");
-            int gracePeriod = resultSet.getInt("graceperiod");
-            int dock = resultSet.getInt("dock");
-            temp = resultSet.getTime("lunchstart");
-            LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime("lunchstop");
-            LocalTime lunchStop = temp.toLocalTime();
-            int lunchDeduct = resultSet.getInt("lunchdeduct");
-
             query = "SELECT * FROM shift WHERE id=?";
             pst = conn.prepareStatement(query);
             pst.setInt(1, ID);
@@ -154,7 +126,7 @@ public class TASDatabase {
 
             String description = resultSet.getString("description");
 
-            DailySchedule schedule = new DailySchedule(ShiftID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
+            DailySchedule schedule = getDailySchedule(ID);
             shift = new Shift(description, schedule);
 
         } catch (Exception e) {
@@ -180,7 +152,7 @@ public class TASDatabase {
             resultSet.first();
 
             int shiftID = resultSet.getInt("shiftid");
-            //TODO: remove space?
+
             shift = getShift(shiftID);
         } catch (Exception e) {
             e.printStackTrace();
@@ -220,8 +192,7 @@ public class TASDatabase {
 
                 if (timestamp >= startTimestamp && ((endTimestamp == null) || (timestamp <= endTimestamp))){
                     if ((badgeid == null) || (badgeid.equals( badge.getId() ))){
-                        DailySchedule schedule = null;  //TODO: can these 2 lines be combined?
-                        schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
+                        DailySchedule schedule = getDailySchedule(resultSet.getInt("dailyscheduleid"));
                         shift.setSchedule(schedule, resultSet.getInt("day"));
                     }
                 }
@@ -232,7 +203,7 @@ public class TASDatabase {
         return shift;
     }
     
-    public DailySchedule getDailySchedule(int ID) { //TODO: make private?
+    private DailySchedule getDailySchedule(int ID) {
         DailySchedule schedule = null;
         String query;
         PreparedStatement pst;
@@ -246,20 +217,15 @@ public class TASDatabase {
             pst.execute();
             resultSet = pst.getResultSet();
             resultSet.first();
-            java.sql.Time temp;
 
             int ShiftID = resultSet.getInt("id");
-            temp = resultSet.getTime("start");  //TODO: see above - can combine?
-            LocalTime start = temp.toLocalTime();
-            temp = resultSet.getTime("stop");
-            LocalTime stop = temp.toLocalTime();
+            LocalTime start = resultSet.getTime("start").toLocalTime();
+            LocalTime stop = resultSet.getTime("stop").toLocalTime();
             int interval = resultSet.getInt("interval");
             int gracePeriod = resultSet.getInt("graceperiod");
             int dock = resultSet.getInt("dock");
-            temp = resultSet.getTime("lunchstart");
-            LocalTime lunchStart = temp.toLocalTime();
-            temp = resultSet.getTime("lunchstop");
-            LocalTime lunchStop = temp.toLocalTime();
+            LocalTime lunchStart = resultSet.getTime("lunchstart").toLocalTime();
+            LocalTime lunchStop = resultSet.getTime("lunchstop").toLocalTime();
             int lunchDeduct = resultSet.getInt("lunchdeduct");
 
             schedule = new DailySchedule(ShiftID, start, stop, interval, gracePeriod, dock, lunchStart, lunchStop, lunchDeduct);
@@ -275,7 +241,8 @@ public class TASDatabase {
         GregorianCalendar ots = new GregorianCalendar();
         ots.setTimeInMillis(p.getOriginaltimestamp());
         String badgeID = p.getBadge().getId();
-        int terminalID = p.getTerminalid(), punchTypeID = p.getPunchtypeid();   //TODO: split?
+        int terminalID = p.getTerminalid();
+        int punchTypeID = p.getPunchtypeid();
 
         try {
             PreparedStatement pst;
@@ -287,20 +254,16 @@ public class TASDatabase {
                 query = "INSERT INTO punch (terminalid, badgeid, originaltimestamp, punchtypeid) VALUES (?, ?, ?, ?)";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setInt(1, terminalID);
-                pst.setString(2, badgeID.toString());   //TODO: remove toString - is already a String
+                pst.setString(2, badgeID);
                 pst.setString(3, (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(ots.getTime()));
                 pst.setInt(4, punchTypeID);
 
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
                 resultSet.first();
-                if (resultSet.getInt(1) > 0) {  //TODO: change constants to collumn headers
-                    return resultSet.getInt(1);
-                } else {
-                    return -1;  //TODO: duplicate return value?
+                if (resultSet.getInt("id") > 0) {
+                    return resultSet.getInt("id");
                 }
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -312,11 +275,9 @@ public class TASDatabase {
     
     public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
         Timestamp timestamp = new Timestamp(ts);
-        String timeLike = timestamp.toString().substring(0, 11);
-        timeLike += "%";
+        String timeLike = timestamp.toString().substring(0, 11) + "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
         ArrayList<Punch> sortedDailyPunchList = new ArrayList<>();
-
 
         try {
             PreparedStatement pst;
@@ -324,31 +285,29 @@ public class TASDatabase {
             String query;
             boolean isPaired = true;
 
-
             if (conn.isValid(0)){
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";   //TODO: can you add AS in order to skip the sorting?
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?"; //TODO "ORDER BY id"
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setString(1, badge.getId());
                 pst.setString(2, timeLike);
 
                 pst.execute();
                 resultSet = pst.getResultSet();
-                
+
                 while(resultSet.next()){
                     int punchId = resultSet.getInt("id");
                     //TODO: remove extra space?
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
-                    
+
                     isPaired = !isPaired;
                 }
-                
+
                 if(!isPaired){
                     timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
-                    timeLike = timestamp.toString().substring(0, 11);
-                    timeLike += "%";
+                    timeLike = timestamp.toString().substring(0, 11) +  "%";
 
-                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";
+                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";  //TODO "ORDER BY id"
                     pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                     pst.setString(1, badge.getId());
                     pst.setString(2, timeLike);
@@ -356,13 +315,12 @@ public class TASDatabase {
                     pst.execute();
                     resultSet = pst.getResultSet();
                     resultSet.first();
-                    
+
                     int punchId = resultSet.getInt("id");
 
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                 }
-                
                 //Sort dailyPunchList if necessary
                 if (dailyPunchList.size() > 0){
                     if(dailyPunchList.get(0).getPunchtypeid() == 0){
@@ -371,7 +329,6 @@ public class TASDatabase {
                         sortedDailyPunchList = dailyPunchList;
                     }
                 }
-                
             }
         } catch (Exception e) {
             e.printStackTrace();
