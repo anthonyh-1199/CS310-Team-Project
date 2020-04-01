@@ -24,9 +24,7 @@ public class DailySchedule {
     }
 
     private int shiftDuration (LocalTime start, LocalTime stop) {
-        LocalTime l1 = LocalTime.parse(start.toString());
-        LocalTime l2 = LocalTime.parse(stop.toString());
-        long time = l1.until(l2, MINUTES);
+        long time = start.until(stop, MINUTES);
         return (int) time;
     }
 
