@@ -417,13 +417,8 @@ public class TASDatabase {
     }
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(ts);
-        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
-        gc.set(Calendar.MINUTE, 0);
-        gc.set(Calendar.SECOND, 0);
-        gc.set(Calendar.MILLISECOND, 0);
+        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
+        
         long tsNew = gc.getTimeInMillis();
 
         Timestamp timestamp = new Timestamp(tsNew);
