@@ -70,36 +70,7 @@ public class TASLogic {
         return JSONValue.toJSONString(mapList);
     }
 
-    // TODO: Find how to get arrayList from getPayPeriodPunchList
-    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
-        int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
-            Calendar.THURSDAY, Calendar.FRIDAY};
-        double minWorked, minScheduled = 0, percentage;
-        
-        minWorked = calculateTotalMinutes(punchlist, s);
-        
-        for(int day : days){
-            LocalTime start = s.getStart(day);
-            LocalTime stop = s.getStop(day);
-            minScheduled += start.until(stop, ChronoUnit.MINUTES);
-            
-            minScheduled -= s.getLunchDuration(day);
-        }
-
-        percentage = (1 - (minWorked / minScheduled)) * 10000;
-        if (percentage < 0) {
-            percentage = -(Math.round(Math.abs(percentage * 10)));
-            percentage /= 10;
-        }
-        else {
-            percentage = Math.round(percentage);
-        }
-
-        percentage = percentage / 100;
-        return percentage;
-    }
-
-    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {//test
+    public static String getPunchListPlusTotalsAsJSON(ArrayList<Punch> punchList, Shift shift) {
         HashMap<String, String> map;
         ArrayList<HashMap<String, String>> mapList = new ArrayList<>();
 
@@ -117,14 +88,45 @@ public class TASLogic {
 
         map = new HashMap<>();
         map.put("totalminutes", String.valueOf(calculateTotalMinutes(punchList, shift)));
-        map.put("absenteeism", String.valueOf((new DecimalFormat("0.00")).
-                format(calculateAbsenteeism(punchList, shift)) + '%'));
+        map.put("absenteeism", (new DecimalFormat("0.00")).format(calculateAbsenteeism(punchList, shift)) + '%');
         mapList.add(map);
-
 
         return JSONValue.toJSONString(mapList);
     }
-    
+
+    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
+        int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY};
+        double minWorked, minScheduled = 0, percentage;
+
+        minWorked = calculateTotalMinutes(punchlist, s);
+
+        for(int day : days){
+            LocalTime start = s.getStart(day);
+            LocalTime stop = s.getStop(day);
+            int minutes = (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
+//            int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
+
+            if (minutes > s.getLunchDeduct(day)) {
+                minutes -= s.getLunchDuration(day);
+            }
+//            minScheduled -= s.getLunchDuration(day);    //TODO: make sure changes didn't break anything
+
+            minScheduled += minutes;
+        }
+            //TODO: come back after database works
+        percentage = (1 - (minWorked / minScheduled)) * 10000;
+        if (percentage < 0) {   //TODO: get the math whiz to tell us why we're idiots
+            percentage = -(Math.round(Math.abs(percentage * 10)));
+            percentage /= 10;
+        }
+        else {
+            percentage = Math.round(percentage);
+        }
+
+        percentage = percentage / 100;
+        return percentage;
+    }
+
     public static GregorianCalendar convertLongtoGC(long l){
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTimeInMillis(l);
