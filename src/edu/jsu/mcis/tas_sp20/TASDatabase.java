@@ -241,7 +241,7 @@ public class TASDatabase {
         GregorianCalendar ots = new GregorianCalendar();
         ots.setTimeInMillis(p.getOriginaltimestamp());
         String badgeID = p.getBadge().getId();
-        int terminalID = p.getTerminalid(); 
+        int terminalID = p.getTerminalid();
         int punchTypeID = p.getPunchtypeid();
 
         try {
@@ -296,7 +296,6 @@ public class TASDatabase {
 
                 while(resultSet.next()){
                     int punchId = resultSet.getInt("id");
-
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
 
@@ -317,12 +316,11 @@ public class TASDatabase {
                     resultSet.first();
 
                     int punchId = resultSet.getInt("id");
-
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                 }
                 //Sort dailyPunchList if necessary
-                if (dailyPunchList.size() > 0){
+                if (dailyPunchList.size() > 0){ //TODO: Remove?
                     if(dailyPunchList.get(0).getPunchtypeid() == 0){
                         sortPunchList(dailyPunchList, sortedDailyPunchList);
                     } else {
@@ -335,10 +333,11 @@ public class TASDatabase {
         }
 
         return sortedDailyPunchList;
+//        return dailyPunchList;
     }
     
-    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {
-        int count = 1;
+    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {   //TODO: make private    //TODO: return a sorted punch list instead of passing by reference? or pass a single arrayList and sort it?
+        int count = 1;  //TODO: rename
         while(punchlist.size() > 0){
             for(int i = 0; i < punchlist.size(); i++){
                 if(punchlist.get(i).getPunchtypeid() == count){
@@ -352,22 +351,16 @@ public class TASDatabase {
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(ts);
-        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
-        gc.set(Calendar.MINUTE, 0);
-        gc.set(Calendar.SECOND, 0);
-        gc.set(Calendar.MILLISECOND, 0);
+        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
         long tsNew = gc.getTimeInMillis();
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
-            ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
-
-            for(Punch p: temp){
-                returnArray.add(p);
-            }
+//            ArrayList<Punch> temp = getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
+            returnArray.addAll(getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i)));
+//            for(Punch p: temp){   //TODO: make sure this worked
+//                returnArray.add(p);
+//            }
         }
 
         return returnArray;
@@ -375,9 +368,7 @@ public class TASDatabase {
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
         GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        
         long tsNew = gc.getTimeInMillis();
-
         Timestamp timestamp = new Timestamp(tsNew);
         Absenteeism returnAbsenteeism = null;
 
@@ -401,7 +392,7 @@ public class TASDatabase {
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
 
         return returnAbsenteeism;
@@ -409,15 +400,14 @@ public class TASDatabase {
     }
 
     public void insertAbsenteeism(Absenteeism abs){
-        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
+        Absenteeism ab = getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
 
         try {
+            PreparedStatement pst;
+            String query;
+
+            //Try to request abs, if null, insert
             if(ab == null){
-                PreparedStatement pst;
-                String query;
-
-                //Try to request abs, if null, insert
-
                 if (conn.isValid(0)){
                     //Insert
                     query = "INSERT INTO absenteeism (badgeid, payperiod, percentage) VALUES (?, ?, ?)";
@@ -428,12 +418,9 @@ public class TASDatabase {
 
                     pst.execute();
                 }
-            }else{
-                PreparedStatement pst;
-                String query;
-
-                //Try to request abs, if not null, update
-
+            }
+            //Try to request abs, if not null, update
+            else{
                 if (conn.isValid(0)){
                     //Update
                     query = "UPDATE absenteeism SET percentage = ?, payperiod = ? WHERE payperiod = ? AND badgeid = ?";
