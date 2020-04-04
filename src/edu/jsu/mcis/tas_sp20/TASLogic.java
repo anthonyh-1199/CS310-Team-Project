@@ -94,35 +94,34 @@ public class TASLogic {
         return JSONValue.toJSONString(mapList);
     }
 
-    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
+    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {//TODO: re-check
         int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY};
         double minWorked, minScheduled = 0, percentage;
 
         minWorked = calculateTotalMinutes(punchlist, s);
 
-//        for(int day : days){
-//            LocalTime start = s.getStart(day);
-//            LocalTime stop = s.getStop(day);
-//            minScheduled += (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
-////            int minutes = (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
-////            int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
-//
-////            if (minutes > s.getLunchDeduct(day)) {
-////                minutes -= s.getLunchDuration(day);
-////            }
-//            minScheduled -= s.getLunchDuration(day);    //TODO: make sure changes didn't break anything
-//
-////            minScheduled += minutes;
-//        }
-
         for(int day : days){
             LocalTime start = s.getStart(day);
             LocalTime stop = s.getStop(day);
-            minScheduled += start.until(stop, ChronoUnit.MINUTES);
+            int minutes = (int)(start.until(stop, ChronoUnit.MINUTES));
 
-            minScheduled -= s.getLunchDuration(day);
+            if (minutes > s.getLunchDeduct(day)) {
+                minutes -= s.getLunchDuration(day);
+            }
+
+            minScheduled += minutes;
         }
-            //TODO: come back after database works
+
+
+//        percentage = (1 - (minWorked / minScheduled)) * 10000;
+        if (false) {
+            percentage = (1 - (minWorked / minScheduled));
+            percentage *= 10000;
+            percentage = Math.round(percentage);
+            percentage = percentage / 100;
+            return percentage;
+        }
+
         percentage = (1 - (minWorked / minScheduled)) * 10000;
         if (percentage < 0) {   //TODO: get the math whiz to tell us why we're idiots
             percentage = -(Math.round(Math.abs(percentage * 10)));
