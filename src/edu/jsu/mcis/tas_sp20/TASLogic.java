@@ -100,18 +100,27 @@ public class TASLogic {
 
         minWorked = calculateTotalMinutes(punchlist, s);
 
+//        for(int day : days){
+//            LocalTime start = s.getStart(day);
+//            LocalTime stop = s.getStop(day);
+//            minScheduled += (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
+////            int minutes = (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
+////            int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
+//
+////            if (minutes > s.getLunchDeduct(day)) {
+////                minutes -= s.getLunchDuration(day);
+////            }
+//            minScheduled -= s.getLunchDuration(day);    //TODO: make sure changes didn't break anything
+//
+////            minScheduled += minutes;
+//        }
+
         for(int day : days){
             LocalTime start = s.getStart(day);
             LocalTime stop = s.getStop(day);
-            int minutes = (int)(start.until(stop, ChronoUnit.MINUTES) / 60000);
-//            int minutes = (int)((punch.getAdjustedtimestamp() - inTime) / 60000);
+            minScheduled += start.until(stop, ChronoUnit.MINUTES);
 
-            if (minutes > s.getLunchDeduct(day)) {
-                minutes -= s.getLunchDuration(day);
-            }
-//            minScheduled -= s.getLunchDuration(day);    //TODO: make sure changes didn't break anything
-
-            minScheduled += minutes;
+            minScheduled -= s.getLunchDuration(day);
         }
             //TODO: come back after database works
         percentage = (1 - (minWorked / minScheduled)) * 10000;

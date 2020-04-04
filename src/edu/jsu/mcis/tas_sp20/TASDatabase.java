@@ -261,8 +261,8 @@ public class TASDatabase {
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
                 resultSet.first();
-                if (resultSet.getInt("id") > 0) {
-                    return resultSet.getInt("id");
+                if (resultSet.getInt(1) > 0) {
+                    return resultSet.getInt(1);
                 }
             }
         } catch (Exception e) {
