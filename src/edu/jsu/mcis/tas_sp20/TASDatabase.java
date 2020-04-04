@@ -273,7 +273,7 @@ public class TASDatabase {
 
     }
     
-    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){    //todo: review changes
         Timestamp timestamp = new Timestamp(ts);
         String timeLike = timestamp.toString().substring(0, 11) + "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
@@ -286,7 +286,7 @@ public class TASDatabase {
             boolean isPaired = true;
 
             if (conn.isValid(0)){
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?"; //TODO "ORDER BY id"
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setString(1, badge.getId());
                 pst.setString(2, timeLike);
@@ -306,7 +306,7 @@ public class TASDatabase {
                     timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
                     timeLike = timestamp.toString().substring(0, 11) +  "%";
 
-                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";  //TODO "ORDER BY id"
+                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
                     pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                     pst.setString(1, badge.getId());
                     pst.setString(2, timeLike);
@@ -319,35 +319,13 @@ public class TASDatabase {
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                 }
-                //Sort dailyPunchList if necessary
-                if (dailyPunchList.size() > 0){ //TODO: Remove?
-                    if(dailyPunchList.get(0).getPunchtypeid() == 0){
-                        sortPunchList(dailyPunchList, sortedDailyPunchList);
-                    } else {
-                        sortedDailyPunchList = dailyPunchList;
-                    }
-                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return sortedDailyPunchList;
-//        return dailyPunchList;
-    }
-    
-    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {   //TODO: make private    //TODO: return a sorted punch list instead of passing by reference? or pass a single arrayList and sort it?
-        int count = 1;  //TODO: rename
-        while(punchlist.size() > 0){
-            for(int i = 0; i < punchlist.size(); i++){
-                if(punchlist.get(i).getPunchtypeid() == count){
-                    sortedpunchlist.add(punchlist.get(i));
-                    punchlist.remove(i);
-                }
-            }
-
-            count = (count + 1) % 2;
-        }
+        return dailyPunchList;
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
