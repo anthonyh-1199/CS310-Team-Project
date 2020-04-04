@@ -261,8 +261,8 @@ public class TASDatabase {
                 pst.execute();
                 resultSet = pst.getGeneratedKeys();
                 resultSet.first();
-                if (resultSet.getInt("id") > 0) {
-                    return resultSet.getInt("id");
+                if (resultSet.getInt(1) > 0) {
+                    return resultSet.getInt(1);
                 }
             }
         } catch (Exception e) {
@@ -273,7 +273,7 @@ public class TASDatabase {
 
     }
     
-    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){    //todo: review changes
         Timestamp timestamp = new Timestamp(ts);
         String timeLike = timestamp.toString().substring(0, 11) + "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
@@ -286,7 +286,7 @@ public class TASDatabase {
             boolean isPaired = true;
 
             if (conn.isValid(0)){
-                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?"; //TODO "ORDER BY id"
+                query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
                 pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 pst.setString(1, badge.getId());
                 pst.setString(2, timeLike);
@@ -296,7 +296,6 @@ public class TASDatabase {
 
                 while(resultSet.next()){
                     int punchId = resultSet.getInt("id");
-                    //TODO: remove extra space?
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
 
@@ -307,7 +306,7 @@ public class TASDatabase {
                     timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
                     timeLike = timestamp.toString().substring(0, 11) +  "%";
 
-                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ?";  //TODO "ORDER BY id"
+                    query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
                     pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                     pst.setString(1, badge.getId());
                     pst.setString(2, timeLike);
@@ -317,72 +316,37 @@ public class TASDatabase {
                     resultSet.first();
 
                     int punchId = resultSet.getInt("id");
-
                     Punch temp = this.getPunch(punchId);
                     dailyPunchList.add(temp);
                 }
-                //Sort dailyPunchList if necessary
-                if (dailyPunchList.size() > 0){
-                    if(dailyPunchList.get(0).getPunchtypeid() == 0){
-                        sortPunchList(dailyPunchList, sortedDailyPunchList);
-                    } else {
-                        sortedDailyPunchList = dailyPunchList;
-                    }
-                }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return sortedDailyPunchList;
-    }
-    
-    public void sortPunchList(ArrayList<Punch> punchlist, ArrayList<Punch> sortedpunchlist) {   //TODO: make private    //TODO: return a sorted punch list instead of passing by reference? or pass a single arrayList and sort it?
-        int count = 1;  //TODO: rename
-        while(punchlist.size() > 0){
-            for(int i = 0; i < punchlist.size(); i++){
-                if(punchlist.get(i).getPunchtypeid() == count){
-                    sortedpunchlist.add(punchlist.get(i));
-                    punchlist.remove(i);
-                }
-            }
-
-            count = (count + 1) % 2;
-        }
+        return dailyPunchList;
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(ts);
-        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
-        gc.set(Calendar.MINUTE, 0);
-        gc.set(Calendar.SECOND, 0);
-        gc.set(Calendar.MILLISECOND, 0);
+        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
         long tsNew = gc.getTimeInMillis();
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
-            ArrayList<Punch> temp = this.getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));    //TODO: Can't we just return this arrayList instead of copying it?
-
-            for(Punch p: temp){
-                returnArray.add(p);
-            }
+//            ArrayList<Punch> temp = getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
+            returnArray.addAll(getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i)));
+//            for(Punch p: temp){   //TODO: make sure this worked
+//                returnArray.add(p);
+//            }
         }
 
         return returnArray;
     }
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(ts);
-        gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
-        gc.set(Calendar.MINUTE, 0);
-        gc.set(Calendar.SECOND, 0);
-        gc.set(Calendar.MILLISECOND, 0);
-        long tsNew = gc.getTimeInMillis();  //TODO: is this a different number than ts?
-
+        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
+        long tsNew = gc.getTimeInMillis();
         Timestamp timestamp = new Timestamp(tsNew);
         Absenteeism returnAbsenteeism = null;
 
@@ -406,7 +370,7 @@ public class TASDatabase {
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
 
         return returnAbsenteeism;
@@ -414,15 +378,14 @@ public class TASDatabase {
     }
 
     public void insertAbsenteeism(Absenteeism abs){
-        Absenteeism ab = this.getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
+        Absenteeism ab = getAbsenteeism(abs.getBadgeId(), abs.getTimestampLong());
 
         try {
+            PreparedStatement pst;
+            String query;
+
+            //Try to request abs, if null, insert
             if(ab == null){
-                PreparedStatement pst;
-                String query;
-
-                //Try to request abs, if null, insert
-
                 if (conn.isValid(0)){
                     //Insert
                     query = "INSERT INTO absenteeism (badgeid, payperiod, percentage) VALUES (?, ?, ?)";
@@ -433,12 +396,9 @@ public class TASDatabase {
 
                     pst.execute();
                 }
-            }else{
-                PreparedStatement pst;
-                String query;
-
-                //Try to request abs, if not null, update
-
+            }
+            //Try to request abs, if not null, update
+            else{
                 if (conn.isValid(0)){
                     //Update
                     query = "UPDATE absenteeism SET percentage = ?, payperiod = ? WHERE payperiod = ? AND badgeid = ?";
