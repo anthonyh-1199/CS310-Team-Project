@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class TASDatabase {
     private Connection conn;
@@ -273,11 +272,10 @@ public class TASDatabase {
 
     }
     
-    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){    //todo: review changes
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
         Timestamp timestamp = new Timestamp(ts);
         String timeLike = timestamp.toString().substring(0, 11) + "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
-        ArrayList<Punch> sortedDailyPunchList = new ArrayList<>();
 
         try {
             PreparedStatement pst;
@@ -334,11 +332,7 @@ public class TASDatabase {
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
-//            ArrayList<Punch> temp = getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
             returnArray.addAll(getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i)));
-//            for(Punch p: temp){   //TODO: make sure this worked
-//                returnArray.add(p);
-//            }
         }
 
         return returnArray;
