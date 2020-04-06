@@ -94,7 +94,7 @@ public class TASLogic {
         return JSONValue.toJSONString(mapList);
     }
 
-    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {//TODO: re-check
+    public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
         int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY};
         double minWorked, minScheduled = 0, percentage;
 
@@ -112,18 +112,8 @@ public class TASLogic {
             minScheduled += minutes;
         }
 
-
-//        percentage = (1 - (minWorked / minScheduled)) * 10000;
-        if (false) {
-            percentage = (1 - (minWorked / minScheduled));
-            percentage *= 10000;
-            percentage = Math.round(percentage);
-            percentage = percentage / 100;
-            return percentage;
-        }
-
         percentage = (1 - (minWorked / minScheduled)) * 10000;
-        if (percentage < 0) {   //TODO: get the math whiz to tell us why we're idiots
+        if (percentage < 0) {
             percentage = -(Math.round(Math.abs(percentage * 10)));
             percentage /= 10;
         }
