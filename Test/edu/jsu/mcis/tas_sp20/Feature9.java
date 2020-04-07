@@ -1,3 +1,5 @@
+//package edu.jsu.mcis.tas_sp20;
+//
 //import java.text.SimpleDateFormat;
 //import java.util.Date;
 //
@@ -13,50 +15,50 @@
 //        db = new TASDatabase();
 //    }
 //    
-//    @Test
-//    public void testEmployee() {
-//        
-//        /* Create Employee Objects */
-//        
-//        Employee e1 = db.getEmployee("9D527CFB");
-//        Employee e2 = db.getEmployee("29C3C7D4");
-//        Employee e3 = db.getEmployee("2A5620A0");
-//        Employee e4 = db.getEmployee("12565C60");
-//        Employee e5 = db.getEmployee("6C0D1549");
-//        Employee e6 = db.getEmployee("8709982E");
-//        
-//        /* Test Employee Objects */
-//        
-//        assertEquals("Rodriquez, Jarvis B (#9D527CFB); Type 0 (Temporary Employee); Department 8; Shift 1; Active: 09/22/2015; Inactive: none", e1.toString());
-//        assertEquals("Gomez, Rose M (#29C3C7D4); Type 0 (Temporary Employee); Department 1; Shift 1; Active: 11/02/2015; Inactive: none", e2.toString());
-//        assertEquals("Eaton, Curtis M (#2A5620A0); Type 0 (Temporary Employee); Department 2; Shift 1; Active: 10/16/2015; Inactive: none", e3.toString());
-//        assertEquals("Chapman, Joshua E (#12565C60); Type 0 (Temporary Employee); Department 5; Shift 1; Active: 09/11/2015; Inactive: none", e4.toString());
-//        assertEquals("Franklin, Ronald W (#6C0D1549); Type 0 (Temporary Employee); Department 1; Shift 1; Active: 09/22/2015; Inactive: none", e5.toString());
-//        assertEquals("Dent, Judy E (#8709982E); Type 1 (Full-Time Employee); Department 1; Shift 1; Active: 06/27/2016; Inactive: none", e6.toString());
-//
-//    }
-//    
-//    @Test
-//    public void testDepartment() {
-//        
-//        /* Create Department Objects */
-//        
-//        Department d1 = db.getDepartment(1);
-//        Department d2 = db.getDepartment(2);
-//        Department d3 = db.getDepartment(3);
-//        Department d4 = db.getDepartment(6);
-//        Department d5 = db.getDepartment(10);
-//        
-//        /* Test Department Objects */
-//        
-//        assertEquals("Department #1 (Assembly); Terminal #103", d1.toString());
-//        assertEquals("Department #2 (Cleaning); Terminal #107", d2.toString());
-//        assertEquals("Department #3 (Warehouse); Terminal #106", d3.toString());
-//        assertEquals("Department #6 (Office); Terminal #102", d4.toString());
-//        assertEquals("Department #10 (Maintenance); Terminal #104", d5.toString());
-//                        
-//    }
-//    
+////    @Test
+////    public void testEmployee() {
+////        
+////        /* Create Employee Objects */
+////        
+////        Employee e1 = db.getEmployee("9D527CFB");
+////        Employee e2 = db.getEmployee("29C3C7D4");
+////        Employee e3 = db.getEmployee("2A5620A0");
+////        Employee e4 = db.getEmployee("12565C60");
+////        Employee e5 = db.getEmployee("6C0D1549");
+////        Employee e6 = db.getEmployee("8709982E");
+////        
+////        /* Test Employee Objects */
+////        
+////        assertEquals("Rodriquez, Jarvis B (#9D527CFB); Type 0 (Temporary Employee); Department 8; Shift 1; Active: 09/22/2015; Inactive: none", e1.toString());
+////        assertEquals("Gomez, Rose M (#29C3C7D4); Type 0 (Temporary Employee); Department 1; Shift 1; Active: 11/02/2015; Inactive: none", e2.toString());
+////        assertEquals("Eaton, Curtis M (#2A5620A0); Type 0 (Temporary Employee); Department 2; Shift 1; Active: 10/16/2015; Inactive: none", e3.toString());
+////        assertEquals("Chapman, Joshua E (#12565C60); Type 0 (Temporary Employee); Department 5; Shift 1; Active: 09/11/2015; Inactive: none", e4.toString());
+////        assertEquals("Franklin, Ronald W (#6C0D1549); Type 0 (Temporary Employee); Department 1; Shift 1; Active: 09/22/2015; Inactive: none", e5.toString());
+////        assertEquals("Dent, Judy E (#8709982E); Type 1 (Full-Time Employee); Department 1; Shift 1; Active: 06/27/2016; Inactive: none", e6.toString());
+////
+////    }
+////    
+////    @Test
+////    public void testDepartment() {
+////        
+////        /* Create Department Objects */
+////        
+////        Department d1 = db.getDepartment(1);
+////        Department d2 = db.getDepartment(2);
+////        Department d3 = db.getDepartment(3);
+////        Department d4 = db.getDepartment(6);
+////        Department d5 = db.getDepartment(10);
+////        
+////        /* Test Department Objects */
+////        
+////        assertEquals("Department #1 (Assembly); Terminal #103", d1.toString());
+////        assertEquals("Department #2 (Cleaning); Terminal #107", d2.toString());
+////        assertEquals("Department #3 (Warehouse); Terminal #106", d3.toString());
+////        assertEquals("Department #6 (Office); Terminal #102", d4.toString());
+////        assertEquals("Department #10 (Maintenance); Terminal #104", d5.toString());
+////                        
+////    }
+////    
 //    @Test
 //    public void testPayPeriodMethods() {
 //        

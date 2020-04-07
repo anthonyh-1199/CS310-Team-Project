@@ -128,17 +128,19 @@ public class TASLogic {
         return newPercent.doubleValue();
     }
 
-    public static Timestamp getStartOfPayperiod(long ts){
+    public static long getStartOfPayPeriod(long ts){
         GregorianCalendar gc = new GregorianCalendar();
         gc.setTimeInMillis(ts);
         gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
+        gc.set(Calendar.HOUR_OF_DAY, 0);
         gc.set(Calendar.MINUTE, 0);
         gc.set(Calendar.SECOND, 0);
         gc.set(Calendar.MILLISECOND, 0);
-        
-        long tsNew = gc.getTimeInMillis();
-        
-        return new Timestamp(tsNew);
+                        
+        return (long) gc.getTimeInMillis();
+    }
+    
+    public static long getEndOfPayPeriod(long ts){
+        return (getStartOfPayPeriod(ts + TASDatabase.WEEK_IN_MILLIS) - 1);
     }
 }
