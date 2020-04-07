@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.lang.Math;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -96,7 +99,7 @@ public class TASLogic {
 
     public static double calculateAbsenteeism(ArrayList<Punch> punchlist, Shift s) {
         int[] days = {Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY};
-        double minWorked, minScheduled = 0, percentage;
+        double minWorked, minScheduled = 0;
 
         minWorked = calculateTotalMinutes(punchlist, s);
 
@@ -112,28 +115,32 @@ public class TASLogic {
             minScheduled += minutes;
         }
 
-        percentage = (1 - (minWorked / minScheduled)) * 10000;
-        if (percentage < 0) {
-            percentage = -(Math.round(Math.abs(percentage * 10)));
-            percentage /= 10;
-        }
-        else {
-            percentage = Math.round(percentage);
-        }
+        //todo: Clean bigdecimal stuff, i know there's an easier way
+        BigDecimal percentage = new BigDecimal(minWorked);
+        percentage = percentage.divide(new BigDecimal(minScheduled), new MathContext(64));
+        
+        BigDecimal newPercent = new BigDecimal(1.0);
+        newPercent = newPercent.subtract(percentage);
+        newPercent = newPercent.multiply(new BigDecimal(100));
+        newPercent = newPercent.round(new MathContext(4));
+        System.out.println(newPercent);
 
-        percentage = percentage / 100;
-        return percentage;
+        return newPercent.doubleValue();
     }
 
-    public static GregorianCalendar convertLongtoGC(long l){
+    public static long getStartOfPayPeriod(long ts){
         GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(l);
+        gc.setTimeInMillis(ts);
         gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
-        gc.set(Calendar.HOUR, 0);
+        gc.set(Calendar.HOUR_OF_DAY, 0);
         gc.set(Calendar.MINUTE, 0);
         gc.set(Calendar.SECOND, 0);
         gc.set(Calendar.MILLISECOND, 0);
-        
-        return gc;
+                        
+        return (long) gc.getTimeInMillis();
+    }
+    
+    public static long getEndOfPayPeriod(long ts){
+        return (getStartOfPayPeriod(ts + TASDatabase.WEEK_IN_MILLIS) - 1);
     }
 }

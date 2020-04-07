@@ -9,7 +9,8 @@ import java.text.SimpleDateFormat;
 public class TASDatabase {
     private Connection conn;
 
-    public final int DAY_IN_MILLIS = 86400000;
+    public static final int DAY_IN_MILLIS = 86400000;
+    public static final int WEEK_IN_MILLIS = 604800000;
 
     public TASDatabase(){
         try {
@@ -301,7 +302,7 @@ public class TASDatabase {
                 }
 
                 if(!isPaired){
-                    timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
+                    timestamp = new Timestamp(timestamp.getTime() +  DAY_IN_MILLIS);
                     timeLike = timestamp.toString().substring(0, 11) +  "%";
 
                     query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
@@ -327,8 +328,7 @@ public class TASDatabase {
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
+        long tsNew = TASLogic.getStartOfPayPeriod(ts);
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
@@ -339,9 +339,7 @@ public class TASDatabase {
     }
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
-        Timestamp timestamp = new Timestamp(tsNew);
+        Timestamp timestamp = new Timestamp(TASLogic.getStartOfPayPeriod(ts));
         Absenteeism returnAbsenteeism = null;
 
         try {
