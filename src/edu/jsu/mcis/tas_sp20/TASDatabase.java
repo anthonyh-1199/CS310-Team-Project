@@ -327,8 +327,8 @@ public class TASDatabase {
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
+        Timestamp timestamp = TASLogic.getStartOfPayperiod(ts);
+        long tsNew = timestamp.getTime();
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
@@ -339,9 +339,7 @@ public class TASDatabase {
     }
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
-        Timestamp timestamp = new Timestamp(tsNew);
+        Timestamp timestamp = TASLogic.getStartOfPayperiod(ts);
         Absenteeism returnAbsenteeism = null;
 
         try {

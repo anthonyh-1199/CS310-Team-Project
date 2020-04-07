@@ -9,14 +9,15 @@ public class Absenteeism {
     private String id;
     private long tsLong;
     private double percentage;
+    private Timestamp timestamp;
     private GregorianCalendar gc = new GregorianCalendar();
 
     public Absenteeism (String id, long tsLong, double percentage) {
-        this.gc = TASLogic.convertLongtoGC(tsLong);
+        this.timestamp = TASLogic.getStartOfPayperiod(tsLong);
+        this.tsLong = timestamp.getTime();
+        this.gc.setTimeInMillis(this.tsLong);
         
-        this.tsLong = gc.getTimeInMillis();
         this.id = id;
-
         this.percentage = percentage;
     }
 

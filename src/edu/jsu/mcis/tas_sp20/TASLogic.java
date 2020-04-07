@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.lang.Math;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -127,15 +128,17 @@ public class TASLogic {
         return newPercent.doubleValue();
     }
 
-    public static GregorianCalendar convertLongtoGC(long l){
+    public static Timestamp getStartOfPayperiod(long ts){
         GregorianCalendar gc = new GregorianCalendar();
-        gc.setTimeInMillis(l);
+        gc.setTimeInMillis(ts);
         gc.add(Calendar.DAY_OF_WEEK, -(gc.get(Calendar.DAY_OF_WEEK) - 1));
         gc.set(Calendar.HOUR, 0);
         gc.set(Calendar.MINUTE, 0);
         gc.set(Calendar.SECOND, 0);
         gc.set(Calendar.MILLISECOND, 0);
         
-        return gc;
+        long tsNew = gc.getTimeInMillis();
+        
+        return new Timestamp(tsNew);
     }
 }
