@@ -5,12 +5,12 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class TASDatabase {
     private Connection conn;
 
-    public final int DAY_IN_MILLIS = 86400000;
+    public static final int DAY_IN_MILLIS = 86400000;
+    public static final int WEEK_IN_MILLIS = 604800000;
 
     public TASDatabase(){
         try {
@@ -273,11 +273,10 @@ public class TASDatabase {
 
     }
     
-    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){    //todo: review changes
+    public ArrayList<Punch> getDailyPunchList(Badge badge, long ts){
         Timestamp timestamp = new Timestamp(ts);
         String timeLike = timestamp.toString().substring(0, 11) + "%";
         ArrayList<Punch> dailyPunchList = new ArrayList<>();
-        ArrayList<Punch> sortedDailyPunchList = new ArrayList<>();
 
         try {
             PreparedStatement pst;
@@ -303,7 +302,7 @@ public class TASDatabase {
                 }
 
                 if(!isPaired){
-                    timestamp = new Timestamp(timestamp.getTime() +  this.DAY_IN_MILLIS);
+                    timestamp = new Timestamp(timestamp.getTime() +  DAY_IN_MILLIS);
                     timeLike = timestamp.toString().substring(0, 11) +  "%";
 
                     query = "SELECT * FROM punch WHERE badgeid = ? AND originaltimestamp LIKE ? ORDER BY ORIGINALTIMESTAMP ASC";
@@ -329,25 +328,18 @@ public class TASDatabase {
     }
 
     public ArrayList<Punch> getPayPeriodPunchList(Badge badge, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
+        long tsNew = TASLogic.getStartOfPayPeriod(ts);
         ArrayList<Punch> returnArray = new ArrayList<>();
 
         for(int i = 0; i < 7; i++){
-//            ArrayList<Punch> temp = getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i));
             returnArray.addAll(getDailyPunchList(badge, tsNew + (this.DAY_IN_MILLIS * i)));
-//            for(Punch p: temp){   //TODO: make sure this worked
-//                returnArray.add(p);
-//            }
         }
 
         return returnArray;
     }
 
     public Absenteeism getAbsenteeism(String badgeId, long ts){
-        GregorianCalendar gc = TASLogic.convertLongtoGC(ts);
-        long tsNew = gc.getTimeInMillis();
-        Timestamp timestamp = new Timestamp(tsNew);
+        Timestamp timestamp = new Timestamp(TASLogic.getStartOfPayPeriod(ts));
         Absenteeism returnAbsenteeism = null;
 
         try {
