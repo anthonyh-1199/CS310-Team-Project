@@ -1,16 +1,14 @@
 package edu.jsu.mcis.tas_sp20;
 
-import java.time.LocalTime;
-
 public class Employee {
     /*Initialize class variables*/
     private String badgeId, firstName, middleName, lastName, employeeType;
     private int employeeTypeId, departmentId, shiftId, employeeId;
-    private LocalTime active, inactive;
+    private Long active, inactive;
     
     /*Constructor method*/
     public Employee(String badgeid, String firstname, String middlename, String lastname, int employeetypeid, 
-        int departmentid, int shiftid, LocalTime active, LocalTime inactive, int id, String employeetype){
+        int departmentid, int shiftid, long active, long inactive, int id, String employeetype){
         this.badgeId = badgeid;
         this.firstName = firstname;
         this.middleName = middlename;
@@ -53,11 +51,11 @@ public class Employee {
         this.shiftId = shiftid;
     }
     
-    public void setActive(LocalTime active){
+    public void setActive(long active){
         this.active = active;
     }
     
-    public void setInactive(LocalTime inactive){
+    public void setInactive(long inactive){
         this.inactive = inactive;
     }
     
@@ -94,11 +92,11 @@ public class Employee {
         return this.shiftId;
     }
     
-    public LocalTime getActive(){
+    public long getActive(){
         return this.active;
     }
     
-    public LocalTime getInactive(){
+    public long getInactive(){
         return this.inactive;
     }
     
