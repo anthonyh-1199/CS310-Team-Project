@@ -407,4 +407,81 @@ public class TASDatabase {
             e.printStackTrace();
         }
     }
+
+    public Employee getEmployee(String badgeID) {
+        Employee employee = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+
+            query = "SELECT * FROM employee WHERE badgeid = ?";
+            pst = conn.prepareStatement(query);
+            pst.setString(1, badgeID);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+
+            String firstName = resultSet.getString("firstname");
+            String middleName = resultSet.getString("middlename");
+            String lastName = resultSet.getString("lastname");
+            int employeeTypeID = resultSet.getInt("employeetypeid");
+            int departmentID = resultSet.getInt("departmentid");
+            int shiftID = resultSet.getInt("shiftid");
+            long active = resultSet.getLong("active");
+            long inactive = resultSet.getLong("inactive");
+            int id = resultSet.getInt("id");
+
+
+            query = "SELECT * FROM employeetype WHERE id = ?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, employeeTypeID);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.first();
+
+            String employeeType = resultSet.getString("description");
+
+
+            employee = new Employee(badgeID, firstName,  middleName, lastName, employeeTypeID,
+             departmentID, shiftID, active, inactive, id, employeeType);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return employee;
+    }
+
+    public Department getDepartment(int id){
+        Department department = null;
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+
+        try {
+            query = "SELECT * FROM department WHERE id = ?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1,id);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+            resultSet.next();
+
+            String description = resultSet.getString("description");
+            int terminalID = resultSet.getInt("terminalid");
+
+            department = new Department(description, id, terminalID);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return department;
+    }
+
 }
+
