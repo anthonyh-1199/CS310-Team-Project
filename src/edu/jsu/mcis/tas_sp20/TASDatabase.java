@@ -430,11 +430,16 @@ public class TASDatabase {
             int employeeTypeID = resultSet.getInt("employeetypeid");
             int departmentID = resultSet.getInt("departmentid");
             int shiftID = resultSet.getInt("shiftid");
-            long active = resultSet.getLong("active");
-            long inactive = resultSet.getLong("inactive");
+            long active = resultSet.getTimestamp("active").getTime();
+            long inactive;
+            if (resultSet.getTimestamp("inactive") != null){
+                inactive = resultSet.getTimestamp("inactive").getTime();
+            } else {
+                inactive = 0;
+            }
             int id = resultSet.getInt("id");
 
-
+            
             query = "SELECT * FROM employeetype WHERE id = ?";
             pst = conn.prepareStatement(query);
             pst.setInt(1, employeeTypeID);

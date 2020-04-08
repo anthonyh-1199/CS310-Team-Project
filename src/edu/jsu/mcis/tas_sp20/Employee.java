@@ -1,5 +1,9 @@
 package edu.jsu.mcis.tas_sp20;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Employee {
     /*Initialize class variables*/
     private String badgeId, firstName, middleName, lastName, employeeType;
@@ -111,13 +115,19 @@ public class Employee {
     /*Print-out methods*/
     @Override
     public String toString(){
-        String s = lastName + ", " + firstName + " " + middleName + " (" + badgeId + "); Type " + employeeTypeId + " (" + employeeType + 
-            "); Department " + departmentId + "; Shift " + shiftId + "; Active: " + active + "; Inactive: ";
+        String s = lastName + ", " + firstName + " " + middleName + " (#" + badgeId + "); Type " + employeeTypeId + " (" + employeeType + 
+            "); Department " + departmentId + "; Shift " + shiftId + "; Active: ";
+
+        DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+        Date d = new Date(active);
         
-        if (inactive == null){
+        s += (df.format(d)) + "; Inactive: ";
+        
+        if (inactive == 0){
             s += "none";
         } else {
-            s += inactive;
+            d = new Date(inactive);
+            s += (df.format(d));
         }
 
         return s;
