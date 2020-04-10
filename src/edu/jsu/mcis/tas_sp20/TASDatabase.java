@@ -511,5 +511,19 @@ public class TASDatabase {
         return data;
     }
 
+    public ArrayList<HashMap> getDepartmentSummaryData(int id, long payPeriod) {
+        String query;
+        PreparedStatement pst;
+
+        ArrayList<HashMap> data = getPayPeriodPunchList()
+
+        try {
+            query = ""
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
