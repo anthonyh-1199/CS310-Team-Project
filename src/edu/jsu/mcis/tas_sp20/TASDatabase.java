@@ -514,15 +514,61 @@ public class TASDatabase {
     public ArrayList<HashMap> getDepartmentSummaryData(int id, long payPeriod) {
         String query;
         PreparedStatement pst;
+        ResultSet resultSet;
+        ArrayList<HashMap> data = null;
 
-        ArrayList<HashMap> data = getPayPeriodPunchList()
+        try{
+            query = "SELECT badgeid FROM employee WHERE departmentid = ?";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, id);
 
-        try {
-            query = ""
+            pst.execute();
+            resultSet = pst.getResultSet();
+            ArrayList<Employee> employees = new ArrayList<>();
+            while (resultSet.next()) {
+                employees.add(getEmployee(resultSet.getString("badgeid")));
+            }
+
+            for (Employee employee : employees) {
+                HashMap<String, Object> row = new HashMap<>();
+                Badge badge = getBadge(employee.getBadgeId());
+                Shift shift = getShift(employee.getShiftId());
+                Department department = getDepartment(id);
+
+                ArrayList<Punch> punchList = getPayPeriodPunchList(badge, payPeriod);
+                for (Punch punch : punchList) {
+                    punch.adjust(shift);
+                }
+
+                double hours = TASLogic.calculateTotalMinutes(punchList, shift) / 60;
+
+                String fullName = employee.getLastName() + ", " + employee.getFirstName() + " " + employee.getMiddleName();
+                double regHours;
+                double otHours;
+                if (hours > 40) {
+                    regHours = 40;
+                    otHours = hours - 40;
+                } else {
+                    regHours = hours;
+                    otHours = 0;
+                }
+
+                row.put("fullName", fullName);
+                row.put("department", department.toString());
+                row.put("employeeType", employee.getEmployeeType());
+                row.put("shiftNum", ("Shift " + employee.getShiftId()));
+                row.put("regHours", String.valueOf(regHours));  //TODO: format to 2nd decimal
+                row.put("otHours", String.valueOf(otHours));    //TODO: same
+
+                data.add(row);
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return data;
     }
 
 }
