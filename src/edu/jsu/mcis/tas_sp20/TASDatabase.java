@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
 public class TASDatabase {
     private Connection conn;
@@ -486,6 +487,28 @@ public class TASDatabase {
         }
 
         return department;
+    }
+
+    public ArrayList<HashMap> getBadgeSummaryData() {
+        ArrayList<HashMap> data = null;
+        try {
+            data = new ArrayList<>();
+            PreparedStatement stmt = conn.prepareStatement("SELECT badge.description AS badgedescription, department.description AS departmentdescription, badgeid, employeetype.description AS employeetypedescription FROM badge JOIN employee ON badge.id = employee.badgeid JOIN department ON employee.departmentid = department.id JOIN employeetype ON employee.employeetypeid = employeetype.id ORDER BY badgedescription");
+            boolean resultsAvailable = stmt.execute();
+            if (resultsAvailable) {
+                ResultSet results = stmt.getResultSet();
+                while (results.next()) {
+                    HashMap<String, Object> row = new HashMap<>();
+                    row.put("badgedescription", results.getString("badgedescription"));
+                    row.put("departmentdescription", results.getString("departmentdescription"));
+                    row.put("badgeid", results.getString("badgeid"));
+                    row.put("employeetypedescription", results.getString("employeetypedescription"));
+                    data.add(row);
+                }
+            }
+        }
+        catch (Exception e) { e.printStackTrace(); }
+        return data;
     }
 
 }
