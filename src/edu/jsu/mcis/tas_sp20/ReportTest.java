@@ -1,9 +1,13 @@
 package edu.jsu.mcis.tas_sp20;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import net.sf.jasperreports.engine.*;
@@ -11,8 +15,23 @@ import net.sf.jasperreports.engine.data.*;
 import org.json.simple.*;
 
 public class ReportTest {
-    
+
     public static void main(String[] args) {
+        //ASSEMBLY: id = 1, punch = 3810
+        //GRINDING: id = 4, punch = 2550, 2693?
+        //PRESS: id = 7, punch = 1129
+        //SHIPPING: id = 8, punch = 4262
+
+        if (false) {
+            TASDatabase db = new TASDatabase();
+            Punch punch = db.getPunch(1129);
+
+            createHoursSummary(7, punch.getOriginaltimestamp());
+        }
+//        createBadgeSummary();
+    }
+    
+    public static void createBadgeSummary() {
         
         try {
             
@@ -61,6 +80,41 @@ public class ReportTest {
         }
         catch (Exception e) { e.printStackTrace(); }
         
+    }
+
+    public static void createHoursSummary(int id, long payPeriod) {
+
+        try {
+            TASDatabase db = new TASDatabase();
+
+            ArrayList<HashMap> reportData = db.getDepartmentSummaryData(id, payPeriod);
+            JRDataSource jasperDataSource = new JRMapArrayDataSource(reportData.toArray());
+
+            System.out.println(JSONValue.toJSONString(reportData)); //for testing
+
+            HashMap<String, Object> parameters = new HashMap<>();
+
+            DateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+            java.util.Date d = new Date(TASLogic.getEndOfPayPeriod(payPeriod));
+            parameters.put("subtitle", "Pay Period Ending: " + df.format(d).toUpperCase());
+
+            InputStream in = ClassLoader.class.getResourceAsStream("/resources/departmentReport.jasper");
+            FileOutputStream out = new FileOutputStream(new File("hourSummary.pdf"));
+
+            byte[] pdf = JasperRunManager.runReportToPdf(in, parameters, jasperDataSource);
+
+            if (pdf.length > 0) {
+                System.out.println("Data successfully retrieved! Writing...");
+                out.write(pdf);
+            }
+
+            in.close();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
     
 }

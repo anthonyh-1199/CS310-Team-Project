@@ -1,8 +1,10 @@
 package edu.jsu.mcis.tas_sp20;
 
 import java.sql.*;
+import java.text.DateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -518,7 +520,9 @@ public class TASDatabase {
         ArrayList<HashMap> data = null;
 
         try{
-            query = "SELECT badgeid FROM employee WHERE departmentid = ?";
+            data = new ArrayList<>();
+
+            query = "SELECT badgeid FROM employee WHERE departmentid = ? ORDER BY lastname ASC";
             pst = conn.prepareStatement(query);
             pst.setInt(1, id);
 
@@ -526,7 +530,12 @@ public class TASDatabase {
             resultSet = pst.getResultSet();
             ArrayList<Employee> employees = new ArrayList<>();
             while (resultSet.next()) {
-                employees.add(getEmployee(resultSet.getString("badgeid")));
+                Employee employee = getEmployee(resultSet.getString("badgeid"));
+                Badge badge = getBadge(employee.getBadgeId());
+
+                if (getPayPeriodPunchList(badge, payPeriod).size() > 0) {
+                    employees.add(employee);
+                }
             }
 
             for (Employee employee : employees) {
@@ -540,9 +549,11 @@ public class TASDatabase {
                     punch.adjust(shift);
                 }
 
-                double hours = TASLogic.calculateTotalMinutes(punchList, shift) / 60;
-
+//                double hours = (TASLogic.calculateTotalMinutes(punchList, shift)) / 60;   TODO: why don't I work as one line?
+                double hours = TASLogic.calculateTotalMinutes(punchList, shift);
+                hours /= 60;
                 String fullName = employee.getLastName() + ", " + employee.getFirstName() + " " + employee.getMiddleName();
+
                 double regHours;
                 double otHours;
                 if (hours > 40) {
@@ -554,11 +565,11 @@ public class TASDatabase {
                 }
 
                 row.put("fullName", fullName);
-                row.put("department", department.toString());
+                row.put("department", department.getDescription());
                 row.put("employeeType", employee.getEmployeeType());
                 row.put("shiftNum", ("Shift " + employee.getShiftId()));
-                row.put("regHours", String.valueOf(regHours));  //TODO: format to 2nd decimal
-                row.put("otHours", String.valueOf(otHours));    //TODO: same
+                row.put("regHours", regHours);
+                row.put("otHours", otHours);
 
                 data.add(row);
             }
