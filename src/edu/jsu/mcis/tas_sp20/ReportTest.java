@@ -22,10 +22,11 @@ public class ReportTest {
         //PRESS: id = 7, punch = 1129
         //SHIPPING: id = 8, punch = 4262
 
-        if (false) {
+        if (true) {
             TASDatabase db = new TASDatabase();
             Punch punch = db.getPunch(1129);
 
+            createTimeSheetSummary("0FFA272B", 1536901200000L);
             createHoursSummary(7, punch.getOriginaltimestamp());
         }
 //        createBadgeSummary();
@@ -100,6 +101,39 @@ public class ReportTest {
 
             InputStream in = ClassLoader.class.getResourceAsStream("/resources/departmentReport.jasper");
             FileOutputStream out = new FileOutputStream(new File("hourSummary.pdf"));
+
+            byte[] pdf = JasperRunManager.runReportToPdf(in, parameters, jasperDataSource);
+
+            if (pdf.length > 0) {
+                System.out.println("Data successfully retrieved! Writing...");
+                out.write(pdf);
+            }
+
+            in.close();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    
+    public static void createTimeSheetSummary(String badgeid, long day) {
+
+        try {
+            TASDatabase db = new TASDatabase();
+
+            ArrayList<HashMap> reportData = db.getTimeSheetData(badgeid, day);
+            JRDataSource jasperDataSource = new JRMapArrayDataSource(reportData.toArray());
+            
+            System.out.println(JSONValue.toJSONString(reportData)); //for testing
+
+            HashMap<String, Object> parameters = new HashMap<>();
+            
+            parameters.put("subtitle", "Employee Time Sheet: " + badgeid);
+
+            InputStream in = ClassLoader.class.getResourceAsStream("/resources/TimeSheetReport.jasper");
+            FileOutputStream out = new FileOutputStream(new File("timesheetSummary.pdf"));
 
             byte[] pdf = JasperRunManager.runReportToPdf(in, parameters, jasperDataSource);
 
