@@ -512,6 +512,80 @@ public class TASDatabase {
         catch (Exception e) { e.printStackTrace(); }
         return data;
     }
+    
+    public ArrayList<HashMap> getTimeSheetData(String badgeid, long day) {
+        ArrayList<HashMap> data = null;
+        TASDatabase db = new TASDatabase();
+        try {
+            data = new ArrayList<>();
+            
+            //Get the employee shift
+            Shift shift = db.getShift(db.getBadge(badgeid), day);
+            
+            //Create a date range to search from
+            DateFormat queryFormat = new SimpleDateFormat("yyyy/MM/dd");
+            DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            DateFormat hoursFormat = new SimpleDateFormat("HH:mm:ss");
+            
+            Date day1 = new Date (day);
+            Date day2 = new Date (day + 86400000);
+            
+            String query = "SELECT id FROM punch WHERE badgeid = \"" + badgeid + "\" AND originaltimestamp >= '" + queryFormat.format(day1) + "' AND originaltimestamp < '" + queryFormat.format(day2) + "';";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            boolean resultsAvailable = stmt.execute();
+            
+            //Counts up the accrued hours per punch
+            Long accruedHours = 0L;
+            LocalTime accruedTime;
+            
+            if (resultsAvailable) {
+                ResultSet results = stmt.getResultSet();
+                while (results.next()) {
+                    HashMap<String, Object> row = new HashMap<>();
+
+                    //Format all data for report
+
+                    Punch punch = getPunch(results.getInt("id"));
+                    punch.adjust(shift);
+
+                    row.put("Terminal", punch.getTerminalid());
+
+                    switch (punch.getPunchtypeid()){
+                        case 0:
+                            row.put("PunchType", "Clock Out");
+                            
+                            accruedHours = punch.getAdjustedtimestamp() - accruedHours;
+                            accruedTime = LocalTime.ofNanoOfDay(accruedHours * 1000000);
+                            row.put("Hours", "" + accruedTime);
+                            break;
+                        case 1:
+                            row.put("PunchType", "Clock In");
+                            
+                            accruedHours = punch.getAdjustedtimestamp(); //Get the punch start time in terms of milliseconds
+                            row.put("Hours", "");
+                            break;
+                        case 2:
+                            row.put("PunchType", "Time Out");
+                            
+                            accruedHours = punch.getAdjustedtimestamp() - accruedHours;
+                            accruedTime = LocalTime.ofNanoOfDay(accruedHours * 1000000);
+                            row.put("Hours", "" + accruedTime);
+                            break;
+                    }
+
+                    Date origDate = new Date(punch.getOriginaltimestamp());
+                    row.put("OrigTimestamp", reportFormat.format(origDate));
+                    
+                    Date adjDate = new Date(punch.getAdjustedtimestamp());
+                    row.put("AdjTimestamp", reportFormat.format(adjDate));
+
+                    data.add(row);
+                }
+            }
+        }
+        catch (Exception e) { e.printStackTrace(); }
+        return data;
+    }
 
     public ArrayList<HashMap> getDepartmentSummaryData(int id, long payPeriod) {
         String query;
