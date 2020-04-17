@@ -130,7 +130,8 @@ public class ReportTest {
 
             HashMap<String, Object> parameters = new HashMap<>();
             
-            parameters.put("subtitle", "Employee Time Sheet: " + badgeid);
+            Employee e = db.getEmployee(badgeid);
+            parameters.put("subtitle", e.getLastName() + ", " + e.getFirstName() + " " + e.getMiddleName() + " (" + badgeid + ") Time Sheet: ");
 
             InputStream in = ClassLoader.class.getResourceAsStream("/resources/TimeSheetReport.jasper");
             FileOutputStream out = new FileOutputStream(new File("timesheetSummary.pdf"));
