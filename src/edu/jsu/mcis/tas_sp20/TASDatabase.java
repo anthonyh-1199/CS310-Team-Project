@@ -524,8 +524,7 @@ public class TASDatabase {
             
             //Create a date range to search from
             DateFormat queryFormat = new SimpleDateFormat("yyyy/MM/dd");
-            DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            DateFormat hoursFormat = new SimpleDateFormat("HH:mm:ss");
+            DateFormat reportFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
             
             Date day1 = new Date (day);
             Date day2 = new Date (day + 86400000);
