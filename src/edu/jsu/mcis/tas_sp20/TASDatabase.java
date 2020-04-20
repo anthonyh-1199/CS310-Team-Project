@@ -656,5 +656,78 @@ public class TASDatabase {
         return data;
     }
 
+   public ArrayList<HashMap> getAbsenteeismReportData(String badgeId, Timestamp payPeriod) {
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+        ArrayList<HashMap> data = null;
+        long ts = TASLogic.getStartOfPayPeriod(payPeriod.getTime());
+        double percentage = 0;
+        DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Absenteeism abs;
+        
+        try{
+            data = new ArrayList<>();
+
+            for(int i = 0; i < 7; i++){
+                abs = null; //Reset abs, unecessary for code, but its abs day (Everyday's abs day)
+                
+                //Get PayPeriod Start and End
+                Timestamp payPeriodStart = new Timestamp(ts - (i * WEEK_IN_MILLIS));
+                payPeriodStart = new Timestamp(TASLogic.getStartOfPayPeriod(payPeriodStart.getTime()));
+                Timestamp payPeriodEnd = new Timestamp(TASLogic.
+                        getEndOfPayPeriod(payPeriodStart.getTime()));
+                
+                //Get Absenteeism if there is ones
+                abs = getAbsenteeism(badgeId, payPeriodStart.getTime());
+                
+                //Create Absenteeism if not
+                System.out.println(abs.toString());
+                if(abs == null){
+                    Shift sForShift = getShift(getBadge(badgeId), payPeriodStart.getTime());
+                    ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart.getTime());
+
+                    for (Punch p : punchList) {
+                        p.adjust(sForShift);
+                        System.out.println(p.toString());
+                    }
+                    
+                    if(punchList.size() > 0){
+                        percentage = TASLogic.calculateAbsenteeism(punchList, sForShift);
+                    }else{
+                        percentage = 0;
+                    }
+                    
+                    abs = new Absenteeism(badgeId, payPeriodStart.getTime(), percentage);
+                    insertAbsenteeism(abs);
+                }
+
+                //Get absenteeism percentage from the payperiod
+//                query = "SELECT percentage FROM absenteeism WHERE badgeid = ? AND payperiod = ?";
+//                pst = conn.prepareStatement(query);
+//                pst.setString(1, badgeId);
+//                pst.setTimestamp(2, payPeriodStart);
+//
+//                pst.execute();
+//                resultSet = pst.getResultSet();
+//                if (resultSet.next()) {
+//                    percentage = resultSet.getDouble("percentage");
+//                } else {
+//                    percentage = 100;
+//                }
+                
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("payPeriodStart", reportFormat.format(payPeriodStart));
+                row.put("payPeriodEnd", reportFormat.format(payPeriodEnd));
+                row.put("absenteeism", abs.getPercentage());
+                
+                data.add(row);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
 }
 
