@@ -13,6 +13,7 @@ import java.util.HashMap;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.*;
 import org.json.simple.*;
+import net.sf.jasperreports.engine.JasperCompileManager;
 
 public class ReportTest {
 
@@ -151,5 +152,16 @@ public class ReportTest {
         }
 
     }
+
+    public static void createRollsheetSummary(String badgId, Long timestamp){  // TODO: Figure out how to write subreports
+
+        try {
+            TASDatabase db = new TASDatabase();
+
+        } catch (Exception e) {
+
+        }
+    }
     
 }
+

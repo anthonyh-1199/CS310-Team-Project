@@ -655,5 +655,102 @@ public class TASDatabase {
         return data;
     }
 
+    public ArrayList <ArrayList<HashMap>> getWhosInWhosOutData (String badgeId, Long timestamp) {
+        String query;
+        PreparedStatement pst;
+        ResultSet resultSet;
+        ArrayList<ArrayList<HashMap>> data = null;
+
+        try {
+            data = new ArrayList<>();
+
+            Employee employee = getEmployee(badgeId);
+            int departmentId = employee.getDepartmentId();
+
+            query = "SELECT * FROM employee WHERE departmentid = ? ORDER BY lastname ASC";
+            pst = conn.prepareStatement(query);
+            pst.setInt(1, departmentId);
+
+            pst.execute();
+            resultSet = pst.getResultSet();
+
+            ArrayList<Employee> employees = new ArrayList<>();
+            while (resultSet.next()) {
+                Employee e = getEmployee(resultSet.getString("badgeid"));
+                employees.add(e);
+            }
+
+            // Add information to clockOut
+            ArrayList<HashMap> clockOut = new ArrayList<>();
+            for (Employee e: employees) {
+                HashMap<String, Object> row = new HashMap<>();
+                String fullName = e.getLastName() + ", " + e.getFirstName() + " " + e.getMiddleName();
+
+                Badge badge = getBadge(e.getBadgeId());
+                ArrayList<Punch> punches = getDailyPunchList(badge, timestamp);
+
+                int terminalId = 0;
+                int punchType = -1;
+                for (Punch p: punches) {
+                    long closest = 0;
+                    Punch closestPunch = null;
+                    long origTs = p.getOriginaltimestamp();
+
+                    if (origTs < timestamp && origTs > closest) {
+                        closest = origTs;
+                        closestPunch = p;
+                    }
+                    punchType = closestPunch.getPunchtypeid();
+                    terminalId = closestPunch.getTerminalid();
+                }
+
+                if (punchType == 0 || punchType == 2) {
+                    row.put("name", fullName);
+                    row.put("terminal", String.valueOf(terminalId));
+                    clockOut.add(row);
+                }
+
+            }
+
+            // Add information to clockIn
+            ArrayList<HashMap> clockIn = new ArrayList<>();
+            for (Employee e: employees) {
+                HashMap<String, Object> row = new HashMap<>();
+                String fullName = e.getLastName() + ", " + e.getFirstName() + " " + e.getMiddleName();
+
+                Badge badge = getBadge(e.getBadgeId());
+                ArrayList<Punch> punches = getDailyPunchList(badge, timestamp);
+
+                int terminalId = 0;
+                int punchType = -1;
+                for (Punch p: punches) {
+                    long closest = 0;
+                    Punch closestPunch = null;
+                    long origTs = p.getOriginaltimestamp();
+
+                    if (origTs < timestamp && origTs > closest) {
+                        closest = origTs;
+                        closestPunch = p;
+                    }
+                    punchType = closestPunch.getPunchtypeid();
+                    terminalId = closestPunch.getTerminalid();
+                }
+
+                if (punchType == 1) {
+                    row.put("name", fullName);
+                    row.put("terminal", String.valueOf(terminalId));
+                    clockIn.add(row);
+                }
+            }
+            data.add(clockOut);
+            data.add(clockIn);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
 }
 
