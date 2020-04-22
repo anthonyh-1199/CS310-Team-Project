@@ -13,7 +13,7 @@ public class TASDatabase {
     private Connection conn;
 
     public static final int DAY_IN_MILLIS = 86400000;
-    public static final int WEEK_IN_MILLIS = 604800000;
+    public static final long WEEK_IN_MILLIS = 604800000;
 
     public TASDatabase(){
         try {
@@ -365,7 +365,7 @@ public class TASDatabase {
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return returnAbsenteeism;
@@ -661,9 +661,11 @@ public class TASDatabase {
         ResultSet resultSet;
         ArrayList<HashMap> data = null;
         long ts = TASLogic.getStartOfPayPeriod(payPeriod.getTime());
-        double percentage = 0;
-        DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        double percentage;
+        DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd");//TODO: remove hh:mm:ss
+        
         Absenteeism abs;
+        long payPeriodStart, payPeriodEnd;
         
         try{
             data = new ArrayList<>();
@@ -672,19 +674,18 @@ public class TASDatabase {
                 abs = null; //Reset abs, unecessary for code, but its abs day (Everyday's abs day)
                 
                 //Get PayPeriod Start and End
-                Timestamp payPeriodStart = new Timestamp(ts - (i * WEEK_IN_MILLIS));
-                payPeriodStart = new Timestamp(TASLogic.getStartOfPayPeriod(payPeriodStart.getTime()));
-                Timestamp payPeriodEnd = new Timestamp(TASLogic.
-                        getEndOfPayPeriod(payPeriodStart.getTime()));
+                payPeriodStart = TASLogic.getStartOfPayPeriod(ts - (i * WEEK_IN_MILLIS));
+                System.out.println(ts - (i * WEEK_IN_MILLIS));
+                payPeriodEnd = TASLogic.getEndOfPayPeriod(payPeriodStart);
                 
                 //Get Absenteeism if there is ones
-                abs = getAbsenteeism(badgeId, payPeriodStart.getTime());
+                abs = getAbsenteeism(badgeId, payPeriodStart);
                 
                 //Create Absenteeism if not
-                System.out.println(abs.toString());
                 if(abs == null){
-                    Shift sForShift = getShift(getBadge(badgeId), payPeriodStart.getTime());
-                    ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart.getTime());
+                    System.out.println("is null");
+                    Shift sForShift = getShift(getBadge(badgeId), payPeriodStart);
+                    ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart);
 
                     for (Punch p : punchList) {
                         p.adjust(sForShift);
@@ -697,23 +698,9 @@ public class TASDatabase {
                         percentage = 0;
                     }
                     
-                    abs = new Absenteeism(badgeId, payPeriodStart.getTime(), percentage);
+                    abs = new Absenteeism(badgeId, payPeriodStart, percentage);
                     insertAbsenteeism(abs);
                 }
-
-                //Get absenteeism percentage from the payperiod
-//                query = "SELECT percentage FROM absenteeism WHERE badgeid = ? AND payperiod = ?";
-//                pst = conn.prepareStatement(query);
-//                pst.setString(1, badgeId);
-//                pst.setTimestamp(2, payPeriodStart);
-//
-//                pst.execute();
-//                resultSet = pst.getResultSet();
-//                if (resultSet.next()) {
-//                    percentage = resultSet.getDouble("percentage");
-//                } else {
-//                    percentage = 100;
-//                }
                 
                 HashMap<String, Object> row = new HashMap<>();
                 row.put("payPeriodStart", reportFormat.format(payPeriodStart));
