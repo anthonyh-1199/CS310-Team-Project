@@ -27,10 +27,9 @@ public class ReportTest {
 
         if (true) {
             GregorianCalendar gc = new GregorianCalendar();
-            gc.set(Calendar.DAY_OF_MONTH, 26);
+            gc.set(Calendar.DAY_OF_MONTH, 28);
             gc.set(Calendar.YEAR, 2018);
-            gc.set(Calendar.MONTH, 9);
-            gc.set(Calendar.DAY_OF_MONTH, 16);
+            gc.set(Calendar.MONTH, 8);
             gc.set(Calendar.HOUR_OF_DAY, 0);
             gc.set(Calendar.MINUTE, 0);
             gc.set(Calendar.SECOND, 0);
@@ -40,7 +39,7 @@ public class ReportTest {
 
             //createTimeSheetSummary("0FFA272B", 1536901200000L);
             //createHoursSummary(7, punch.getOriginaltimestamp());
-            createAbsenteeismSummary("E880B82A", gc.getTimeInMillis());
+            createAbsenteeismSummary("922370AA", gc.getTimeInMillis());
         }
 //        createBadgeSummary();
     }

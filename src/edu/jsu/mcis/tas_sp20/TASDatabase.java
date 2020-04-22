@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class TASDatabase {
     private Connection conn;
 
-    public static final int DAY_IN_MILLIS = 86400000;
+    public static final long DAY_IN_MILLIS = 86400000;
     public static final long WEEK_IN_MILLIS = 604800000;
 
     public TASDatabase(){
@@ -656,9 +656,6 @@ public class TASDatabase {
     }
 
    public ArrayList<HashMap> getAbsenteeismReportData(String badgeId, Timestamp payPeriod) {
-        String query;
-        PreparedStatement pst;
-        ResultSet resultSet;
         ArrayList<HashMap> data = null;
         long ts = TASLogic.getStartOfPayPeriod(payPeriod.getTime());
         double percentage;
@@ -675,7 +672,6 @@ public class TASDatabase {
                 
                 //Get PayPeriod Start and End
                 payPeriodStart = TASLogic.getStartOfPayPeriod(ts - (i * WEEK_IN_MILLIS));
-                System.out.println(ts - (i * WEEK_IN_MILLIS));
                 payPeriodEnd = TASLogic.getEndOfPayPeriod(payPeriodStart);
                 
                 //Get Absenteeism if there is ones
@@ -683,13 +679,11 @@ public class TASDatabase {
                 
                 //Create Absenteeism if not
                 if(abs == null){
-                    System.out.println("is null");
                     Shift sForShift = getShift(getBadge(badgeId), payPeriodStart);
                     ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart);
 
                     for (Punch p : punchList) {
                         p.adjust(sForShift);
-                        System.out.println(p.toString());
                     }
                     
                     if(punchList.size() > 0){
@@ -706,7 +700,7 @@ public class TASDatabase {
                 row.put("payPeriodStart", reportFormat.format(payPeriodStart));
                 row.put("payPeriodEnd", reportFormat.format(payPeriodEnd));
                 row.put("absenteeism", abs.getPercentage());
-                
+
                 data.add(row);
             }
         }catch (Exception e) {
