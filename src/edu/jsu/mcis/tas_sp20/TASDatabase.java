@@ -12,8 +12,8 @@ import java.util.HashMap;
 public class TASDatabase {
     private Connection conn;
 
-    public static final int DAY_IN_MILLIS = 86400000;
-    public static final int WEEK_IN_MILLIS = 604800000;
+    public static final long DAY_IN_MILLIS = 86400000;
+    public static final long WEEK_IN_MILLIS = 604800000;
 
     public TASDatabase(){
         try {
@@ -365,7 +365,7 @@ public class TASDatabase {
                 returnAbsenteeism = new Absenteeism(badgeId, ts, percent);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return returnAbsenteeism;
@@ -655,102 +655,59 @@ public class TASDatabase {
         return data;
     }
 
-    public ArrayList <ArrayList<HashMap>> getWhosInWhosOutData (String badgeId, Long timestamp) {
-        String query;
-        PreparedStatement pst;
-        ResultSet resultSet;
-        ArrayList<ArrayList<HashMap>> data = null;
-
-        try {
+   public ArrayList<HashMap> getAbsenteeismReportData(String badgeId, Timestamp payPeriod) {
+        ArrayList<HashMap> data = null;
+        long ts = TASLogic.getStartOfPayPeriod(payPeriod.getTime());
+        double percentage;
+        DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd");//TODO: remove hh:mm:ss
+        
+        Absenteeism abs;
+        long payPeriodStart, payPeriodEnd;
+        
+        try{
             data = new ArrayList<>();
 
-            Employee employee = getEmployee(badgeId);
-            int departmentId = employee.getDepartmentId();
+            for(int i = 0; i < 7; i++){
+                abs = null; //Reset abs, unecessary for code, but its abs day (Everyday's abs day)
+                
+                //Get PayPeriod Start and End
+                payPeriodStart = TASLogic.getStartOfPayPeriod(ts - (i * WEEK_IN_MILLIS));
+                payPeriodEnd = TASLogic.getEndOfPayPeriod(payPeriodStart);
+                
+                //Get Absenteeism if there is ones
+                abs = getAbsenteeism(badgeId, payPeriodStart);
+                
+                //Create Absenteeism if not
+                if(abs == null){
+                    Shift sForShift = getShift(getBadge(badgeId), payPeriodStart);
+                    ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart);
 
-            query = "SELECT * FROM employee WHERE departmentid = ? ORDER BY lastname ASC";
-            pst = conn.prepareStatement(query);
-            pst.setInt(1, departmentId);
-
-            pst.execute();
-            resultSet = pst.getResultSet();
-
-            ArrayList<Employee> employees = new ArrayList<>();
-            while (resultSet.next()) {
-                Employee e = getEmployee(resultSet.getString("badgeid"));
-                employees.add(e);
-            }
-
-            // Add information to clockOut
-            ArrayList<HashMap> clockOut = new ArrayList<>();
-            for (Employee e: employees) {
-                HashMap<String, Object> row = new HashMap<>();
-                String fullName = e.getLastName() + ", " + e.getFirstName() + " " + e.getMiddleName();
-
-                Badge badge = getBadge(e.getBadgeId());
-                ArrayList<Punch> punches = getDailyPunchList(badge, timestamp);
-
-                int terminalId = 0;
-                int punchType = -1;
-                for (Punch p: punches) {
-                    long closest = 0;
-                    Punch closestPunch = null;
-                    long origTs = p.getOriginaltimestamp();
-
-                    if (origTs < timestamp && origTs > closest) {
-                        closest = origTs;
-                        closestPunch = p;
+                    for (Punch p : punchList) {
+                        p.adjust(sForShift);
                     }
-                    punchType = closestPunch.getPunchtypeid();
-                    terminalId = closestPunch.getTerminalid();
-                }
-
-                if (punchType == 0 || punchType == 2) {
-                    row.put("name", fullName);
-                    row.put("terminal", String.valueOf(terminalId));
-                    clockOut.add(row);
-                }
-
-            }
-
-            // Add information to clockIn
-            ArrayList<HashMap> clockIn = new ArrayList<>();
-            for (Employee e: employees) {
-                HashMap<String, Object> row = new HashMap<>();
-                String fullName = e.getLastName() + ", " + e.getFirstName() + " " + e.getMiddleName();
-
-                Badge badge = getBadge(e.getBadgeId());
-                ArrayList<Punch> punches = getDailyPunchList(badge, timestamp);
-
-                int terminalId = 0;
-                int punchType = -1;
-                for (Punch p: punches) {
-                    long closest = 0;
-                    Punch closestPunch = null;
-                    long origTs = p.getOriginaltimestamp();
-
-                    if (origTs < timestamp && origTs > closest) {
-                        closest = origTs;
-                        closestPunch = p;
+                    
+                    if(punchList.size() > 0){
+                        percentage = TASLogic.calculateAbsenteeism(punchList, sForShift);
+                    }else{
+                        percentage = 0;
                     }
-                    punchType = closestPunch.getPunchtypeid();
-                    terminalId = closestPunch.getTerminalid();
+                    
+                    abs = new Absenteeism(badgeId, payPeriodStart, percentage);
+                    insertAbsenteeism(abs);
                 }
+                
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("payPeriodStart", reportFormat.format(payPeriodStart));
+                row.put("payPeriodEnd", reportFormat.format(payPeriodEnd));
+                row.put("absenteeism", abs.getPercentage());
 
-                if (punchType == 1) {
-                    row.put("name", fullName);
-                    row.put("terminal", String.valueOf(terminalId));
-                    clockIn.add(row);
-                }
+                data.add(row);
             }
-            data.add(clockOut);
-            data.add(clockIn);
-
-        } catch (Exception e) {
+        }catch (Exception e) {
             e.printStackTrace();
         }
 
         return data;
     }
-
 }
 
