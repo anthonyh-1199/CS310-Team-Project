@@ -26,11 +26,20 @@ public class ReportTest {
         //SHIPPING: id = 8, punch = 4262
 
         if (true) {
-            TASDatabase db = new TASDatabase();
-            Punch punch = db.getPunch(1129);
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.set(Calendar.DAY_OF_MONTH, 28);
+            gc.set(Calendar.YEAR, 2018);
+            gc.set(Calendar.MONTH, 8);
+            gc.set(Calendar.HOUR_OF_DAY, 0);
+            gc.set(Calendar.MINUTE, 0);
+            gc.set(Calendar.SECOND, 0);
+            Timestamp ts = new Timestamp(gc.getTimeInMillis());
+            //TASDatabase db = new TASDatabase();
+            //Punch punch = db.getPunch(1129);
 
-            createTimeSheetSummary("0FFA272B", 1536901200000L);
-            createHoursSummary(7, punch.getOriginaltimestamp());
+            //createTimeSheetSummary("0FFA272B", 1536901200000L);
+            //createHoursSummary(7, punch.getOriginaltimestamp());
+            createAbsenteeismSummary("922370AA", gc.getTimeInMillis());
         }
 //        createBadgeSummary();
     }
@@ -164,6 +173,37 @@ public class ReportTest {
 
         }
     }
+    
+    public static void createAbsenteeismSummary(String badgeId, long payPeriodLong){
+        try {
+            TASDatabase db = new TASDatabase();
 
+            ArrayList<HashMap> reportData = db.getAbsenteeismReportData(badgeId, new Timestamp(payPeriodLong));
+            JRDataSource jasperDataSource = new JRMapArrayDataSource(reportData.toArray());
+
+            System.out.println(JSONValue.toJSONString(reportData)); //for testing
+
+            HashMap<String, Object> parameters = new HashMap<>();
+            String badgeName = db.getBadge(badgeId).getName();
+
+            parameters.put("employeeName", badgeName);
+
+            InputStream in = ClassLoader.class.getResourceAsStream("/resources/AbsenteeismHistoryReport2.jasper");
+            FileOutputStream out = new FileOutputStream(new File("AbsenteeismHistorySummary.pdf"));
+
+            byte[] pdf = JasperRunManager.runReportToPdf(in, parameters, jasperDataSource);
+
+            if (pdf.length > 0) {
+                System.out.println("Data successfully retrieved! Writing...");
+                out.write(pdf);
+            }
+
+            in.close();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 

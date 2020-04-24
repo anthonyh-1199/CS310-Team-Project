@@ -751,5 +751,57 @@ public class TASDatabase {
 
         return data;
     }
-}
+    
+       public ArrayList<HashMap> getAbsenteeismReportData(String badgeId, Timestamp payPeriod) {
+        ArrayList<HashMap> data = null;
+        long ts = TASLogic.getStartOfPayPeriod(payPeriod.getTime());
+        double percentage;
+        DateFormat reportFormat = new SimpleDateFormat("yyyy/MM/dd");//TODO: remove hh:mm:ss
 
+        Absenteeism abs;
+        long payPeriodStart, payPeriodEnd;
+
+        try{
+            data = new ArrayList<>();
+            
+                for(int i = 0; i < 10; i++){
+                abs = null; //Reset abs, unecessary for code, but its abs day (Everyday's abs day)
+
+                //Get PayPeriod Start and End
+                payPeriodStart = TASLogic.getStartOfPayPeriod(ts - (i * WEEK_IN_MILLIS));
+                payPeriodEnd = TASLogic.getEndOfPayPeriod(payPeriodStart);
+
+                //Get Absenteeism if there is ones
+                abs = getAbsenteeism(badgeId, payPeriodStart);
+
+                //Create Absenteeism if not
+                if(abs == null){
+                    Shift sForShift = getShift(getBadge(badgeId), payPeriodStart);
+                    ArrayList<Punch> punchList = getPayPeriodPunchList(getBadge(badgeId), payPeriodStart);
+
+                    for (Punch p : punchList) {
+                        p.adjust(sForShift);
+                    }
+                     if(punchList.size() > 0){
+                        percentage = TASLogic.calculateAbsenteeism(punchList, sForShift);
+                    }else{
+                        percentage = 0;
+                    }
+                     
+                    abs = new Absenteeism(badgeId, payPeriodStart, percentage);
+                    insertAbsenteeism(abs);
+                }
+
+                HashMap<String, Object> row = new HashMap<>();
+                row.put("payPeriodStart", reportFormat.format(payPeriodStart));
+                row.put("payPeriodEnd", reportFormat.format(payPeriodEnd));
+                row.put("absenteeism", abs.getPercentage());
+                  data.add(row);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+}
