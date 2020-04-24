@@ -39,7 +39,7 @@ public class ReportTest {
 
             //createTimeSheetSummary("0FFA272B", 1536901200000L);
             //createHoursSummary(7, punch.getOriginaltimestamp());
-            createAbsenteeismSummary("922370AA", gc.getTimeInMillis());
+            createAbsenteeismSummary("4E6E296E", gc.getTimeInMillis());
         }
 //        createBadgeSummary();
     }
@@ -178,7 +178,7 @@ public class ReportTest {
             
             parameters.put("employeeName", badgeName);
 
-            InputStream in = ClassLoader.class.getResourceAsStream("/resources/AbsenteeismHistoryReport2.jasper");
+            InputStream in = ClassLoader.class.getResourceAsStream("/resources/AbsenteeismHistoryReport.jasper");
             FileOutputStream out = new FileOutputStream(new File("AbsenteeismHistorySummary.pdf"));
 
             byte[] pdf = JasperRunManager.runReportToPdf(in, parameters, jasperDataSource);
