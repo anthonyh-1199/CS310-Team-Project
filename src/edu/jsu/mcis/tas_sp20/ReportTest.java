@@ -155,7 +155,7 @@ public class ReportTest {
 
     }
 
-    public static void createRollsheetSummary(String badgId, Long timestamp){  // TODO: Figure out how to write subreports
+    public static void createWhosInWhosOutSummary(String badgId, Long timestamp){  // TODO: Figure out how to write subreports
 
         try {
             TASDatabase db = new TASDatabase();
